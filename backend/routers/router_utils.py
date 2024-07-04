@@ -16,6 +16,14 @@ db_dependency = Annotated[Session, Depends(get_db)]
 def get_items_raw(db: db_dependency, table, skip: int = 0, limit: int = 10):
     return db.query(table).offset(skip).limit(limit).all()
 
+def get_item_raw(db: db_dependency, table, index: int):
+    query = db.query(table).filter(table.id == index).first()
+
+    if query is None:
+        raise HTTPException(status_code=404, detail='İçerik Bulunamadı.')
+    
+    return query
+
 def delete_item(db: db_dependency, index: int, table):
     query = db.query(table).filter(table.id == index).first()
 

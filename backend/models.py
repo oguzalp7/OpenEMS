@@ -30,7 +30,7 @@ class User(TimeStampedModel):
     hashed_password = Column(String)
     is_active = Column(Boolean)
     auth_id = Column(Integer, ForeignKey('auth.id'), nullable=True)
-    #employee_id = Column(Integer, ForeignKey('employees.id'), nullable=True)
+    employee_id = Column(Integer, ForeignKey('employees.id'), nullable=True)
 
     #employee = relationship("Employee", back_populates="user", uselist=False, foreign_keys=[employee_id])
     auth = relationship("Auth", back_populates="users", foreign_keys=[auth_id])
@@ -64,10 +64,8 @@ class Branch(Base):
         secondary=branch_department_association,
         back_populates="branches"
     )
-    #employees = relationship("Employee", back_populates="branch")
+    employees = relationship("Employee", back_populates="branch")
 
-    # branch_query = db.query(Branch)
-    # print(branch_query.departments) => [{name}]
 
 class Department(Base):
     __tablename__ = 'departments'
@@ -77,61 +75,62 @@ class Department(Base):
         secondary=branch_department_association,
         back_populates="departments"
     )
-    #employees = relationship("Employee", back_populates="department")
-    # department_query.branches
-
-# class EmploymentType(Base):
-#     __tablename__ = 'employment_types'
-
-#     employees = relationship("Employee", back_populates="employment_type")
-
-
-# class Employee(Base):
-#     __tablename__ = 'employees'
-
-#     branch_id = Column(Integer, ForeignKey('branches.id'))
-#     department_id = Column(Integer, ForeignKey('departments.id'))
-#     employment_type_id = Column(Integer, ForeignKey('employment_types.id'))
-#     user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
-
-#     country_code = Column(String)
-#     phone_number = Column(String)                                               # telefon numarası
-#     job_title = Column(String)                                                  # çalışan iş tanımı
-#     employment_start_date = Column(Date, nullable=False)                        # çalışanın çalışmaya başladığı tarih
-#     employment_end_date = Column(Date, nullable=True)                           # çalışanın iş çıkış tarihi
-#     salary = Column(Float)                                                      # çalışan maaşı
-#     balance = Column(Float)                                                     # çalışan bakiyesi
-#     employment_status = Column(Boolean, default=True)                           # çalışma durumu (aktif-pasif) 
+    employees = relationship("Employee", back_populates="department")
     
 
-#     user = relationship("User", back_populates="employee", uselist=False, foreign_keys=[user_id])
-#     branch = relationship("Branch", back_populates="employees")
-#     department = relationship("Department", back_populates="employees")
-#     employment_type = relationship("EmploymentType", back_populates="employees")
+class EmploymentType(Base):
+    __tablename__ = 'employment_types'
+
+    employees = relationship("Employee", back_populates="employment_type")
+
+
+class Employee(Base):
+    __tablename__ = 'employees'
+
+    branch_id = Column(Integer, ForeignKey('branches.id'))
+    department_id = Column(Integer, ForeignKey('departments.id'))
+    employment_type_id = Column(Integer, ForeignKey('employment_types.id'))
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+
+    country_code = Column(String)
+    phone_number = Column(String)                                               # telefon numarası
+    job_title = Column(String)                                                  # çalışan iş tanımı
+    employment_start_date = Column(Date, nullable=False)                        # çalışanın çalışmaya başladığı tarih
+    employment_end_date = Column(Date, nullable=True)                           # çalışanın iş çıkış tarihi
+    salary = Column(Float)                                                      # çalışan maaşı
+    balance = Column(Float)                                                     # çalışan bakiyesi
+    employment_status = Column(Boolean, default=True)                           # çalışma durumu (aktif-pasif) 
+    
+    #user = relationship("User", back_populates="employee", uselist=False, foreign_keys=[user_id])
+
+    #user = relationship("User", back_populates="employee", uselist=False, remote_side=[User.employee_id],primaryjoin="Employee.user_id == remote(User.id)")
+    branch = relationship("Branch", back_populates="employees")
+    department = relationship("Department", back_populates="employees")
+    employment_type = relationship("EmploymentType", back_populates="employees")
     
 
-# # ----------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------
 
-# class Process(Base):
-#     __tablename__ = 'process'
-#     department_id = Column(Integer, ForeignKey('departments.id'))
-#     duration = Column(Integer, nullable=True)
+class Process(Base):
+    __tablename__ = 'process'
+    department_id = Column(Integer, ForeignKey('departments.id'))
+    duration = Column(Integer, nullable=True)
 
 
-# # ----------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------
 
-# class PaymentTypes(Base):
-#     __tablename__ = 'payment_types'
+class PaymentTypes(Base):
+    __tablename__ = 'payment_types'
 
-# # ----------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------
 
-# class ProcessPrice(TimeStampedModel):
-#     __tablename__ = 'process_price'
-#     employee_id = Column(Integer, ForeignKey('employees.id'))
-#     process_id = Column(Integer, ForeignKey('process.id'))
-#     price = Column(Float, nullable=False)
+class ProcessPrice(TimeStampedModel):
+    __tablename__ = 'process_price'
+    employee_id = Column(Integer, ForeignKey('employees.id'))
+    process_id = Column(Integer, ForeignKey('process.id'))
+    price = Column(Float, nullable=False)
 
-# # ----------------------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------
 
 # class Customer(Base):
 #     __tablename__ = 'customer'
