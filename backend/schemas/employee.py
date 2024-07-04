@@ -1,7 +1,6 @@
 # schemas/employee.py
 from .base import BaseNameSchema
 from datetime import date
-from typing import Optional
 from pydantic import Field
 
 class EmployeeCreateUpdateSchema(BaseNameSchema):

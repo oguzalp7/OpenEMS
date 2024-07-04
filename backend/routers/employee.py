@@ -7,12 +7,12 @@ from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from backend.routers.router_utils import check_privileges
+from .router_utils import check_privileges, convert_result_to_dict
 
 from schemas.employee import EmployeeCreateUpdateSchema
 import logging
 from datetime import datetime
-from backend.routers.router_utils import convert_result_to_dict
+
 
 router = APIRouter(prefix='/employees', tags=['employees'])
 
@@ -47,7 +47,7 @@ def read_employees(db: db_dependency, user: user_dependency, skip: int = 0, limi
     
     employee_api_columns  = [
             'ID', 'AD-SOYAD', 'ÜLKE KODU', 'TELEFON', 'İŞ TANIMI',
-            'İŞ BAŞLANGI TARİHİ', 'İŞ ÇIKIŞ TARİHİ', 'MAAŞ',
+            'İŞ BAŞLANGIÇ TARİHİ', 'İŞ ÇIKIŞ TARİHİ', 'MAAŞ',
             'BAKİYE', 'ÇALIŞMA DURUMU', 'ŞUBE', 'DEPARTMAN', 'ÇALIŞMA TİPİ'
         ]
     
@@ -71,7 +71,6 @@ def read_employees(db: db_dependency, user: user_dependency, skip: int = 0, limi
         .join(EmploymentType, Employee.employment_type_id == EmploymentType.id)\
         .offset(skip)\
         .limit(limit).all()
-
     
     return [convert_result_to_dict(row, employee_api_columns) for row in results]
     
