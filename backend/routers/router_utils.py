@@ -82,4 +82,23 @@ def convert_date_to_timestamp_and_gmt3(date_str):
     # Format the date in GMT+3
     date_gmt3_str = date_gmt3.strftime('%Y-%m-%d %H:%M:%S %Z%z')
     
-    return timestamp_ms, date_gmt3_str
+    return str(timestamp_ms)[0:-2], date_gmt3_str
+
+def convert_timestamp_to_date_gmt3(timestamp_str):
+    """
+    example input: time.time()
+    example output: datetime.date
+    """
+    timestamp_int = int(timestamp_str)
+    dt_utc = datetime.utcfromtimestamp(timestamp_int)
+    tz_gmt_plus_3 = pytz.timezone('Etc/GMT-3')
+    dt_gmt_plus_3 = dt_utc.astimezone(tz_gmt_plus_3)
+    date_gmt_plus_3 = dt_gmt_plus_3.date()
+    return date_gmt_plus_3
+
+"""
+https://blabla.com/api?date=05-05-2024&dep=1&t=1720181953
+"""
+# TODO: Implement this function!
+def process_details(db, process_id, details):
+    return {}

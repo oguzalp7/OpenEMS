@@ -3,12 +3,13 @@
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 from typing import Annotated, List, Optional
+from sqlalchemy import func
 
 from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, create_dynamic_model, ValidationError
+from .router_utils import check_privileges, process_details, convert_result_to_dict, delete_item, get_item_raw, get_items_raw, create_dynamic_model, ValidationError, convert_timestamp_to_date_gmt3
 import logging
 
 from models import Event, Process, Department
@@ -105,23 +106,40 @@ def get_events_by_depertment(db: db_dependency, user: user_dependency, t: Option
         if department_query is None: 
             raise HTTPException(status_code=404, detail='Departman bulunamadı.')
         
-    if t is not None:
-        # convert from timestamp to datetime.date
-        pass
+        
+    cols = ['id', 'date', 'time', 'process_name', 'department_name']
     query = db.query(
             Event.id,
             Event.date,
             Event.time,
-            Event.details,
-            Process.department_id,
-            Department.name
+            #Event.details,
+            #Event.details['downpayment'],
+            Process.name.label('process_name'),
+            #Process.department_id,
+            Department.name.label('department_name')
         )\
         .join(Process, Event.process_id == Process.id)\
         .join(Department, Process.department_id == Department.id)
+    
     if dep is not None:
         query = query.filter(Department.id == dep)
+        keys_query = db.query(Process.attributes).filter(dep == Process.department_id).first()
+        detail_keys = list(keys_query[0].keys())
+        #print(detail_keys)
+        cols.extend(detail_keys)
+        for key in detail_keys:
+            query = query.add_columns(func.json_extract(Event.details, f'$.{key}').label(key))
+
+    if t is not None:
+        # convert from timestamp to datetime.date
+        date_ = convert_timestamp_to_date_gmt3(t)
+        query = query.filter(Event.date == date_)
     
-    print(query.all())
+    
+
+    results = query.offset(skip).limit(limit).all()
+    return [convert_result_to_dict(row, cols) for row in results]
+    
 
 @router.get('/{event_id}', status_code=status.HTTP_200_OK, response_model=EventCreateSchema)
 async def get_raw_event(user: user_dependency, db: db_dependency, event_id: int):
@@ -129,11 +147,21 @@ async def get_raw_event(user: user_dependency, db: db_dependency, event_id: int)
     return get_item_raw(db=db, table=Event, index=event_id)
 
 @router.put("/{event_id}", response_model=EventCreateSchema, status_code=status.HTTP_201_CREATED)
-def update_event(event_id: int, process: EventCreateSchema, db: db_dependency, user: user_dependency):
+def update_event(event_id: int, schema: EventCreateSchema, db: db_dependency, user: user_dependency):
     check_privileges(user, 5)
-    item = get_item_raw(db=db, table=Event, index=event_id)
-    
+    item = db.query(Event).filter(Event.id == event_id).first() #get_item_raw(db=db, table=Event, index=event_id)
+    if item is None: 
+        raise HTTPException(status_code=404, detail='Etkinlik bulunamadı.')
     # make updates here.
+    item.date = schema.date
+    item.time = schema.time
+    item.process_id = schema.process_id
+    item.branch_id = schema.branch_id
+    item.description = schema.description
+    
+    item.details = process_details(db=db, process_id=schema.process_id, details=schema.details)
+    item.added_by = user.get('id')
+
 
     db.commit()
     db.refresh(item)
