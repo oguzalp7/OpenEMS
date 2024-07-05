@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, Float, Date, Time, DateTime, Table, Enum
+from sqlalchemy import Column, ForeignKey, Integer, String, Boolean, Float, Date, Time, DateTime, Table, Enum, JSON
 from sqlalchemy.orm import relationship
 from database import DeclerativeBase
 from datetime import datetime
@@ -77,6 +77,7 @@ class Department(Base):
     )
     employees = relationship("Employee", back_populates="department")
     
+    
 
 class EmploymentType(Base):
     __tablename__ = 'employment_types'
@@ -115,6 +116,19 @@ class Process(Base):
     __tablename__ = 'process'
     department_id = Column(Integer, ForeignKey('departments.id'))
     duration = Column(Integer, nullable=True)
+    attributes = Column(JSON) 
+    """
+        {
+            for pid: 1 (Makyaj Departmanı)
+            is_complete: bool
+            payment_type_id: int
+            .
+            .
+            .
+
+        }
+    
+    """
 
 
 # ----------------------------------------------------------------------------------------------
@@ -145,21 +159,19 @@ class ProcessPrice(TimeStampedModel):
 
 # # ----------------------------------------------------------------------------------------------
 
-# class Event(TimeStampedModel):
-#     __tablename__ = 'events'
-#     id = Column(Integer, ForeignKey('events.id'), primary_key=True)
-#     date = Column(Date, index=True)
-#     time = Column(Time)
+class Event(TimeStampedModel):
+    __tablename__ = 'events'
     
-#     process_id = Column(Integer, ForeignKey('process.id'))
-#     branch_id = Column(Integer, ForeignKey("branches.id"))
-#     employee_id = Column(Integer, ForeignKey('employees.id'))
-#     description = Column(String)
+    date = Column(Date, index=True)
+    time = Column(Time)
+    
+    process_id = Column(Integer, ForeignKey('process.id'))
+    branch_id = Column(Integer, ForeignKey("branches.id"))
+    employee_id = Column(Integer, ForeignKey('employees.id'))
+    description = Column(String)
+    details = Column(JSON, nullable=True)    
 
-#     __mapper_args__ = {
-#         'polymorphic_on': process_id,
-#         'polymorphic_identity': 'event'
-#     }
+
 
 
 # class Appointment(Event):
@@ -187,19 +199,10 @@ class ProcessPrice(TimeStampedModel):
 #     is_hijab = Column(Boolean)
 #     down_payment = Column(Float)
     
-#     __mapper_args__ = {
-#         'polymorphic_identity': 'makeup'
-#     }
-
 
 # class NailArtAppointment(Appointment):
 #     __tablename__ = 'nailart_appointments'
 #     id = Column(Integer, ForeignKey('events.id'), primary_key=True)
 #     plus = Column(Integer)
-#     __mapper_args__ = {
-#         'polymorphic_identity': 'nailart'
-#     }
-
-
 
 # # ----------------------------------------------------------------------------------------------

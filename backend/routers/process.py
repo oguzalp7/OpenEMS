@@ -13,7 +13,7 @@ from .auth import get_current_user
 from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw
 import logging
 
-from schemas.process import ProcessSchema
+from schemas.process import ProcessSchema, ProcessCreateSchema
 
 router = APIRouter(prefix='/processes', tags=['Processes'])
 
@@ -28,8 +28,26 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 logger = logging.getLogger(__name__)
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ProcessSchema)
-async def create_process(user: user_dependency, db: db_dependency, schema: ProcessSchema): 
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=ProcessCreateSchema)
+async def create_process(user: user_dependency, db: db_dependency, schema: ProcessCreateSchema): 
+    """
+    example: {
+        "name": "GELİN",
+        "duration": 120,
+        "department_id": 1,
+        "attributes": {
+            "optional_makeup_id": {"int" : "gt=0"},
+            "hair_stylist_id": {"int" : "gt=0"},
+            "is_complete": {"bool": "defalut=False"},
+            "is_tst" : {"bool": "defalut=False"},
+            "downpayment": {"float" : "ge=0"},
+            "plus": {"int" : "ge=0"},
+            "payment_type_id": {"int" : "gt=0"},
+            "remaining_payment": {"float" : "ge=0"},
+            "customer_id": {"int" : "gt=0"}
+        }
+    }
+    """
     check_privileges(user, 5)
 
     data = Process(**schema.model_dump(), added_by=user.get('id'))
@@ -44,7 +62,7 @@ def get_processes(db: db_dependency, user: user_dependency, skip: int = 0, limit
     
     return get_items_raw(db=db, table=Process, skip=skip, limit=limit)
 
-@router.get('/{process_id}', status_code=status.HTTP_200_OK, response_model=ProcessSchema)
+@router.get('/{process_id}', status_code=status.HTTP_200_OK, response_model=ProcessCreateSchema)
 async def get_raw_process(user: user_dependency, db: db_dependency, process_id: int):
     check_privileges(user, 1)
     return get_item_raw(db=db, table=Process, index=process_id)

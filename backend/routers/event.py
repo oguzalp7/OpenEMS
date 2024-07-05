@@ -1,0 +1,147 @@
+# routers/event.py
+
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from sqlalchemy.orm import Session
+from typing import Annotated, List, Optional
+
+from database import SessionLocal
+from starlette import status
+
+from .auth import get_current_user
+from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, create_dynamic_model, ValidationError
+import logging
+
+from models import Event, Process, Department
+
+from schemas.event import EventSchema, EventCreateSchema
+
+router = APIRouter(prefix='/event', tags=['Events'])
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+db_dependency = Annotated[Session, Depends(get_db)]
+user_dependency = Annotated[dict, Depends(get_current_user)]
+logger = logging.getLogger(__name__)
+
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=EventCreateSchema)
+async def create_event(user: user_dependency, db: db_dependency, schema: EventCreateSchema):
+    """
+    example: {
+        "date": "2024-07-05",
+        "time": "09:24:14.771Z",
+        "process_id": 1,
+        "branch_id": 1,
+        "employee_id": 1,
+        "description": "test hello world",
+        "details": {
+                    "optional_makeup_id": 1,
+                    "hair_stylist_id": 2,
+                    "is_complete": false,
+                    "is_tst" : false,
+                    "downpayment": 100,
+                    "plus": 0,
+                    "payment_type_id": 1,
+                    "remaining_payment": 500,
+                    "customer_id": 1
+                }
+    }
+    
+    """
+
+    check_privileges(user, 5)
+    # check process_id
+    process_query = db.query(Process.attributes).filter(Process.id == schema.process_id).first()
+    if process_query is None:
+        raise HTTPException(status_code=404, detail='İçerik bulunamadı.')
+    
+    attributes = process_query[0]
+    
+    DynamicSchema = create_dynamic_model("AttributeSchema", attributes=attributes)
+    
+    
+    data = schema.details
+    
+    # validate details
+    try:
+        # Validate and create an instance of the dynamic model
+        model_instance = DynamicSchema(**data)
+    except ValidationError as e:
+        raise HTTPException(status_code=400, detail=e)
+    
+
+    data = Event(**schema.model_dump(), added_by=user.get('id'))
+
+    db.add(data)
+    db.commit()
+    db.refresh(data)
+    return data
+
+
+@router.get("/raw/", response_model=List[EventSchema], status_code=status.HTTP_200_OK)
+def get_events_raw(db: db_dependency, user: user_dependency, skip: int = 0, limit: int = 10):
+    check_privileges(user, 1)
+    
+    return get_items_raw(db=db, table=Event, skip=skip, limit=limit)
+
+@router.get('/', status_code=status.HTTP_200_OK)
+def get_events_by_depertment(db: db_dependency, user: user_dependency, t: Optional[str] = Query(None), dep: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
+    """
+        params: 
+        t => timestamp: str
+        dep => department id: int
+        skip => starting from
+        limit => amount of rows in an API call.
+    """
+    
+    check_privileges(user, 1)
+
+    if dep is not None:
+        department_query = db.query(Department).filter(Department.id == dep).first()
+        if department_query is None: 
+            raise HTTPException(status_code=404, detail='Departman bulunamadı.')
+        
+    if t is not None:
+        # convert from timestamp to datetime.date
+        pass
+    query = db.query(
+            Event.id,
+            Event.date,
+            Event.time,
+            Event.details,
+            Process.department_id,
+            Department.name
+        )\
+        .join(Process, Event.process_id == Process.id)\
+        .join(Department, Process.department_id == Department.id)
+    if dep is not None:
+        query = query.filter(Department.id == dep)
+    
+    print(query.all())
+
+@router.get('/{event_id}', status_code=status.HTTP_200_OK, response_model=EventCreateSchema)
+async def get_raw_event(user: user_dependency, db: db_dependency, event_id: int):
+    check_privileges(user, 1)
+    return get_item_raw(db=db, table=Event, index=event_id)
+
+@router.put("/{event_id}", response_model=EventCreateSchema, status_code=status.HTTP_201_CREATED)
+def update_event(event_id: int, process: EventCreateSchema, db: db_dependency, user: user_dependency):
+    check_privileges(user, 5)
+    item = get_item_raw(db=db, table=Event, index=event_id)
+    
+    # make updates here.
+
+    db.commit()
+    db.refresh(item)
+    return item
+
+
+@router.delete('/{event_id}', status_code=status.HTTP_204_NO_CONTENT)
+async def delete_process(db: db_dependency, user: user_dependency, event_id: int):
+    check_privileges(user, 5)
+
+    delete_item(db=db, index=event_id, table=Event)

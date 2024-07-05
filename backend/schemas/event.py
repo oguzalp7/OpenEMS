@@ -1,22 +1,19 @@
 from pydantic import BaseModel, Field
-from enum import Enum
 from datetime import datetime, date, time
+from typing import Dict, Any
 
-class EventTypeEnum(str, Enum):
-    MEETING = "meeting"
-    DAY_OFF = "day_off"
-    MAKEUP_APPOINTMENT = 'makeup_appointment'
-    NAILART_APPOINTMENT = 'nailart_appointment'
-    TRAINING = 'training'
-    MASTERCLASS = 'master_class'
-    OTHER = 'other'
 
-class Event(BaseModel):
 
-    start_date: date
-    end_date: date
-    start_time: time
-    end_time: time
+class EventSchema(BaseModel):
+
+    date: date
+    time: time
+
+    process_id: int = Field(gt=0)
     branch_id: int = Field(gt=0)
     employee_id: int = Field(gt=0)
     description: str
+    
+
+class EventCreateSchema(EventSchema):
+    details: Dict[str, Any] 

@@ -66,3 +66,10 @@ def create_user_employee(user: user_dependency, db: db_dependency, schema: UserE
     db.refresh(user_data)
 
     return {"user": user_data, "employee": employee_data}
+
+
+# TODO-1: 
+# - Add a new end-point for role-based authentication context in frontend
+# - End-point attrs:
+# - - Method: Get
+# - - In return {"user": user_data, "employee": employee_data}

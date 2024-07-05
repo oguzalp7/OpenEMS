@@ -3,3 +3,4 @@ backend/appointment-0-0-0.db
 backend/appointment-0-0-2.db
 backend/routers/__pycache__/
 backend/db_backup_checkpoint_28.05.2024
+#backend/playground.py
