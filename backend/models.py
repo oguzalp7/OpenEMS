@@ -32,7 +32,7 @@ class User(TimeStampedModel):
     auth_id = Column(Integer, ForeignKey('auth.id'), nullable=True)
     employee_id = Column(Integer, ForeignKey('employees.id'), nullable=True)
 
-    #employee = relationship("Employee", back_populates="user", uselist=False, foreign_keys=[employee_id])
+    # employee = relationship("Employee", back_populates="user", uselist=False)
     auth = relationship("Auth", back_populates="users", foreign_keys=[auth_id])
 
     # res = db.qeury(User).first()
@@ -101,7 +101,7 @@ class Employee(Base):
     balance = Column(Float)                                                     # çalışan bakiyesi
     employment_status = Column(Boolean, default=True)                           # çalışma durumu (aktif-pasif) 
     
-    #user = relationship("User", back_populates="employee", uselist=False, foreign_keys=[user_id])
+    #user = relationship("User", back_populates="employee", uselist=False)
 
     #user = relationship("User", back_populates="employee", uselist=False, remote_side=[User.employee_id],primaryjoin="Employee.user_id == remote(User.id)")
     branch = relationship("Branch", back_populates="employees")

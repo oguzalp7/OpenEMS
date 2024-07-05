@@ -4,7 +4,7 @@ import models
 from database import engine
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import auth, user, department, branch, employment_type, employee, process, process_price
+from routers import auth, user, department, branch, employment_type, employee, process, process_price, user_employee
 #from routers import payment_type, makeup_process_price, user_employee, nailart_process_price
 
 models.DeclerativeBase.metadata.create_all(bind=engine)
@@ -32,9 +32,16 @@ app.include_router(process_price.router)
 
 # app.include_router(payment_type.router)
 
-# app.include_router(user_employee.router)
+app.include_router(user_employee.router)
 
 
 # Instructions
 # - activate virtual environment: "..\..\appointment-v2\backend\fastapienv\Scripts\activate"
 # - run uvicorn: python -m uvicorn main:app --reload
+
+# TODO List @05.07.2024
+# - Add data || details to events.
+# - Create an API endpoint for creating both User & Employee at the same time. (Gülbera) DONE!
+# - Add Payment-Type Router (API Endpoints) (İrem)
+# - Add Customers Table
+
