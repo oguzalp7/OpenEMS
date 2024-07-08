@@ -76,7 +76,7 @@ class Department(Base):
         back_populates="departments"
     )
     employees = relationship("Employee", back_populates="department")
-    
+    processes = relationship("Process", back_populates="department")
     
 
 class EmploymentType(Base):
@@ -117,6 +117,7 @@ class Process(Base):
     department_id = Column(Integer, ForeignKey('departments.id'))
     duration = Column(Integer, nullable=True)
     attributes = Column(JSON) 
+    department = relationship("Department", back_populates="processes")
     """
         {
             for pid: 1 (Makyaj Departmanı)
