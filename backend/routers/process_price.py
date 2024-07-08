@@ -7,8 +7,7 @@ from typing import Annotated, List
 from database import SessionLocal
 from starlette import status
 
-from models import ProcessPrice
-
+from models import Process, ProcessPrice
 from .auth import get_current_user
 from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw
 
@@ -40,7 +39,7 @@ async def create_process_price(user: user_dependency, db: db_dependency, schema:
     db.refresh(data)
     return data
 
-@router.get("/", response_model=List[ProcessPriceSchema], status_code=status.HTTP_200_OK)
+@router.get("/raw", response_model=List[ProcessPriceSchema], status_code=status.HTTP_200_OK)
 def get_raw_process_prices(db: db_dependency, user: user_dependency, skip: int = 0, limit: int = 10):
     check_privileges(user, 1)
     
@@ -50,6 +49,22 @@ def get_raw_process_prices(db: db_dependency, user: user_dependency, skip: int =
 async def get_raw_process_price(user: user_dependency, db: db_dependency, price_id: int):
     check_privileges(user, 1)
     return get_item_raw(db=db, table=ProcessPrice, index=price_id)
+
+@router.get('/', status_code=status.HTTP_200_OK,response_model=List[ProcessPriceSchema])
+def get_processed_process_prices(user: user_dependency, db: db_dependency, employee_id: int, process_id: int, skip: int = 0, limit: int = 10):
+    check_privileges(user, 1)
+    processes=db.query(ProcessPrice).filter(ProcessPrice.employee_id==employee_id, ProcessPrice.process_id==process_id).all()
+    if not processes:
+        raise HTTPException(status_code=404, detail="İşlem Bulunamadı.")
+    
+    filtered_processes_prices = []
+    for process in processes:
+        if(db.query(Process).filter(Process.id==process_id).first().attributes["is_complete"]==True):
+            print(process.price)
+            filtered_processes_prices.append(process)
+        else:
+            raise HTTPException(status_code=404, detail="İşlem Tamamlanmamıştır.")
+    return filtered_processes_prices
 
 @router.delete('/{price_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_process_price(db: db_dependency, user: user_dependency, index: int):
