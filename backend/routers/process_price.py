@@ -52,7 +52,7 @@ async def get_raw_process_price(user: user_dependency, db: db_dependency, price_
     return get_item_raw(db=db, table=ProcessPrice, index=price_id)
 
 @router.delete('/{price_id}', status_code=status.HTTP_204_NO_CONTENT)
-async def delete_process(db: db_dependency, user: user_dependency, index: int):
+async def delete_process_price(db: db_dependency, user: user_dependency, index: int):
     check_privileges(user, 5)
 
     delete_item(db=db, index=index, table=ProcessPrice)
@@ -62,7 +62,7 @@ def update_process_price(price_id: int, price: ProcessPriceSchema, db: db_depend
     check_privileges(user, 5)
     db_price = db.query(ProcessPrice).filter(ProcessPrice.id == price_id).first()
     if db_price is None:
-        raise HTTPException(status_code=404, detail="Makeup process price not found")
+        raise HTTPException(status_code=404, detail="Fiyat Bulunamadı.")
     
     db_price.employee_id = price.employee_id
     db_price.process_id = price.process_id
