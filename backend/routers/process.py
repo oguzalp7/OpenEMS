@@ -1,11 +1,11 @@
 # routers/process.py
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path,Query
 from sqlalchemy.orm import Session
-from typing import Annotated, List, Dict, Any
+from typing import Annotated, List, Dict, Any,Optional
 import json
-from models import Process
-
+from models import Process, Department
+from sqlalchemy import cast, JSON
 from database import SessionLocal
 from starlette import status
 
@@ -66,15 +66,39 @@ async def get_raw_process(user: user_dependency, db: db_dependency, process_id: 
     check_privileges(user, 1)
     return get_item_raw(db=db, table=Process, index=process_id)
 
-@router.get('/', status_code=status.HTTP_200_OK,response_model=List[ProcessCreateSchema])
-def get_processed_processes(user: user_dependency, db: db_dependency, department_id: int, skip: int = 0, limit: int = 10):
+@router.get('/', status_code=status.HTTP_200_OK)
+def get_processed_processes(user: user_dependency, db: db_dependency, department_id: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
     check_privileges(user, 1)
-    processes=db.query(Process).filter(Process.department_id == department_id).all()
-    filtered_processes = []
-    for process in processes:
-        if(process.attributes["is_complete"]==True):
-            filtered_processes.append(process)
-    return filtered_processes
+
+    if department_id is not None:
+        department_query = db.query(Department).filter(Department.id == department_id).first()
+        if department_query is None: 
+            raise HTTPException(status_code=404, detail='Departman Bulunamadı.')
+        
+    process_api_columns = ['ID', 'ADI', 'SÜRE', 'DEPARTMAN', 'ÖZELLİKLER']
+    
+    query = db.query(
+        Process.id,
+        Process.name,
+        Process.duration,
+        Process.department_id,
+        Process.attributes
+    )\
+    .join(Department, Process.department_id == Department.id)
+ 
+    if department_id is not None:
+        query = query.filter(Department.id == department_id)
+        if query.count() == 0 :
+                raise HTTPException(status_code=404, detail="Departmanda İşlem Bulunamadı.")
+        else:
+            query = query.filter(cast(Process.attributes['is_complete'], JSON) == True)
+           
+            if query.count() == 0 :
+                raise HTTPException(status_code=404, detail="Departmanda Tamamlanmış İşlem Bulunamadı.")
+    
+    query = query.offset(skip).limit(limit).all()         
+    return [convert_result_to_dict(row, process_api_columns) for row in query]
+
 @router.put("/{process_id}", response_model=ProcessCreateSchema, status_code=status.HTTP_201_CREATED)
 def update_process(process_id: int, schema: ProcessCreateSchema, db: db_dependency, user: user_dependency):
     check_privileges(user, 5)

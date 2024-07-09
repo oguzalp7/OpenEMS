@@ -1,15 +1,15 @@
 # routers/process_price.py
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
-from typing import Annotated, List
+from typing import Annotated, List, Optional
 
 from database import SessionLocal
 from starlette import status
 
-from models import Process, ProcessPrice
+from models import Process, ProcessPrice, Employee
 from .auth import get_current_user
-from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw
+from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw,convert_result_to_dict
 
 import logging
 
@@ -50,21 +50,45 @@ async def get_raw_process_price(user: user_dependency, db: db_dependency, price_
     check_privileges(user, 1)
     return get_item_raw(db=db, table=ProcessPrice, index=price_id)
 
-@router.get('/', status_code=status.HTTP_200_OK,response_model=List[ProcessPriceSchema])
-def get_processed_process_prices(user: user_dependency, db: db_dependency, employee_id: int, process_id: int, skip: int = 0, limit: int = 10):
+@router.get('/', status_code=status.HTTP_200_OK)
+def get_processed_process_prices(user: user_dependency, db: db_dependency, employee_id: Optional[int] = Query(None), process_id: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
     check_privileges(user, 1)
-    processes=db.query(ProcessPrice).filter(ProcessPrice.employee_id==employee_id, ProcessPrice.process_id==process_id).all()
-    if not processes:
-        raise HTTPException(status_code=404, detail="İşlem Bulunamadı.")
+
+    if employee_id is not None:
+        employee_query = db.query(Employee).filter(Employee.id == employee_id).first()
+        if employee_query is None: 
+            raise HTTPException(status_code=404, detail='Çalışan Bulunamadı.')
+
+    if process_id is not None:
+        process_query = db.query(Process).filter(Process.id == process_id).first()
+        if process_query is None: 
+            raise HTTPException(status_code=404, detail='İşlem Bulunamadı.')    
     
-    filtered_processes_prices = []
-    for process in processes:
-        if(db.query(Process).filter(Process.id==process_id).first().attributes["is_complete"]==True):
-            print(process.price)
-            filtered_processes_prices.append(process)
-        else:
-            raise HTTPException(status_code=404, detail="İşlem Tamamlanmamıştır.")
-    return filtered_processes_prices
+    process_price_api_columns = ['ID', 'ÇALIŞAN', 'İŞLEM', 'FİYAT']
+
+    query = db.query(
+        ProcessPrice.id,
+        Employee.name.label('ÇALIŞAN'),
+        Process.name.label('İŞLEM'),
+        ProcessPrice.price
+    )\
+    .join(Employee, ProcessPrice.employee_id == Employee.id)\
+    .join(Process, ProcessPrice.process_id == Process.id)
+
+    if employee_id is not None:
+        query = query.filter(Employee.id == employee_id)
+        if query.count() == 0 :
+                raise HTTPException(status_code=404, detail="Çalışanın İşlem Ücreti Bulunamadı.")
+
+    if process_id is not None:
+        query = query.filter(Process.id == process_id)
+        if query.count() == 0 :
+                raise HTTPException(status_code=404, detail="İşlemin İşlem Ücreti Bulunamadı.")
+    
+    
+    query = query.offset(skip).limit(limit).all()    
+    return [convert_result_to_dict(row, process_price_api_columns) for row in query]
+
 
 @router.delete('/{price_id}', status_code=status.HTTP_204_NO_CONTENT)
 async def delete_process_price(db: db_dependency, user: user_dependency, index: int):

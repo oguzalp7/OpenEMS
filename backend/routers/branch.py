@@ -60,7 +60,7 @@ def read_branch(db: db_dependency, user: user_dependency, branch_id: int = Path(
     
     branch = db.query(Branch).filter(Branch.id == branch_id).first()
     if branch is None:
-        raise HTTPException(status_code=404, detail="Branch not found")
+        raise HTTPException(status_code=404, detail="Şube Bulunamadı. ")
     return branch
 
 @router.put("/{branch_id}", status_code=status.HTTP_200_OK)
