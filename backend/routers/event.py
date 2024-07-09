@@ -93,7 +93,7 @@ def get_events_raw(db: db_dependency, user: user_dependency, skip: int = 0, limi
     return get_items_raw(db=db, table=Event, skip=skip, limit=limit)
 
 @router.get('/', status_code=status.HTTP_200_OK)
-def get_events_by_depertment(db: db_dependency, user: user_dependency, t: Optional[str] = Query(None), dep: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
+def get_events_by_department(db: db_dependency, user: user_dependency, t: Optional[str] = Query(None), dep: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
     """
         params: 
         t => timestamp: str
@@ -110,16 +110,16 @@ def get_events_by_depertment(db: db_dependency, user: user_dependency, t: Option
             raise HTTPException(status_code=404, detail='Departman bulunamadı.')
         
         
-    cols = ['id', 'date', 'time', 'process_name', 'department_name']
+    cols = ['ID', 'TARİH', 'ZAMAN', 'İŞLEM', 'DEPARTMAN']
     query = db.query(
             Event.id,
             Event.date,
             Event.time,
             #Event.details,
             #Event.details['downpayment'],
-            Process.name.label('process_name'),
+            Process.name.label('İŞLEM'),
             #Process.department_id,
-            Department.name.label('department_name')
+            Department.name.label('DEPARTMAN')
         )\
         .join(Process, Event.process_id == Process.id)\
         .join(Department, Process.department_id == Department.id)
