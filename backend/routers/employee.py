@@ -42,8 +42,15 @@ def create_employee(db: db_dependency, user: user_dependency, schema: EmployeeCr
     return employee
 
 @router.get("/", status_code=status.HTTP_200_OK) #, response_model=List[EmployeeReadSchema])
-def read_employees(db: db_dependency, user: user_dependency, b: Optional[str] = Query(None),
+def read_employees(db: db_dependency, user: user_dependency, b: Optional[int] = Query(None),
 dep: Optional[int] = Query(None), et: Optional[int] = Query(None), active: Optional[bool] = Query(True), skip: int = 0, limit: int = 10):
+    """
+        params: 
+        b => branch id: int
+        dep => department id: int
+        et => employment type id: int
+        active => employment status: bool
+    """
     check_privileges(user, 1)
     
     if b is not None:
@@ -96,7 +103,6 @@ dep: Optional[int] = Query(None), et: Optional[int] = Query(None), active: Optio
                 branch = db.query(Branch).filter(Branch.id==b).first()
                 dep_list=branch.departments
                 for deps in dep_list:
-                    print(deps.id)
                     if deps.id == dep:
                         is_dep_available = True
                         query = query.filter(Department.id == dep)

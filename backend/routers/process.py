@@ -67,11 +67,15 @@ async def get_raw_process(user: user_dependency, db: db_dependency, process_id: 
     return get_item_raw(db=db, table=Process, index=process_id)
 
 @router.get('/', status_code=status.HTTP_200_OK)
-def get_processed_processes(user: user_dependency, db: db_dependency, department_id: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
+def get_processed_processes(user: user_dependency, db: db_dependency, dep: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
+    """
+        params: 
+        dep => department id: int
+    """
     check_privileges(user, 1)
 
-    if department_id is not None:
-        department_query = db.query(Department).filter(Department.id == department_id).first()
+    if dep is not None:
+        department_query = db.query(Department).filter(Department.id == dep).first()
         if department_query is None: 
             raise HTTPException(status_code=404, detail='Departman Bulunamadı.')
         
@@ -86,8 +90,8 @@ def get_processed_processes(user: user_dependency, db: db_dependency, department
     )\
     .join(Department, Process.department_id == Department.id)
  
-    if department_id is not None:
-        query = query.filter(Department.id == department_id)
+    if dep is not None:
+        query = query.filter(Department.id == dep)
         if query.count() == 0 :
                 raise HTTPException(status_code=404, detail="Departmanda İşlem Bulunamadı.")
         else:
