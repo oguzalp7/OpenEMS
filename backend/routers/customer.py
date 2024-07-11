@@ -32,9 +32,9 @@ logger = logging.getLogger(__name__)
 async def create_customer(user: user_dependency, db: db_dependency, schema: CustomerCreateSchema): 
     """
     example: {
-        "name": "Şerife",
+        "name": "Ayşe",
         "country_code": "+90",
-        "phone_number": "5535253979",
+        "phone_number": "5555555555",
         "black_listed": False
         "events": {
         }
