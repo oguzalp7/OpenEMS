@@ -4,7 +4,7 @@ import models
 from database import engine
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import auth, user, department, branch, employment_type, employee, process, process_price, user_employee
+from routers import auth, user, department, branch, employment_type, employee, process, process_price, user_employee, customer
 from routers import event
 #from routers import payment_type, makeup_process_price, user_employee, nailart_process_price
 
@@ -32,7 +32,7 @@ app.include_router(process.router)
 app.include_router(process_price.router)
 
 # app.include_router(payment_type.router)
-
+app.include_router(customer.router)
 app.include_router(user_employee.router)
 app.include_router(event.router)
 

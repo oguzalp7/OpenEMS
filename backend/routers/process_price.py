@@ -46,20 +46,19 @@ async def create_process_prices_per_employee(user: user_dependency, db: db_depen
     check_privileges(user, 5)
 
     employee = db.query(Employee).filter(Employee.id == e).first()
-    print(employee.name)
+  
     if employee is None:
         raise HTTPException(status_code=404, detail="Çalışan Bulunamadı.")
     
     employee_department = db.query(Employee.department_id).filter(Employee.id == e).first()
     if employee_department is not None:
         employee_department = employee_department[0]
-    print(employee_department)
+
     pids = db.query(Process.id).filter(Process.department_id == employee_department).all()
     if len(pids) == 0:
         raise HTTPException(status_code=404, detail="Departmanda İşlem Bulunamadı.")
     process_ids = [pid[0] for pid in pids]
 
-    # Example of inserting into the process_price table
     for process_id in process_ids:
         process_price = ProcessPrice(employee_id=e, process_id=process_id, price=0, added_by=user.get('id'))  # Price will be updated later
         db.add(process_price)
