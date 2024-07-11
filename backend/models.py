@@ -147,15 +147,15 @@ class ProcessPrice(TimeStampedModel):
 
 # ----------------------------------------------------------------------------------------------
 
-# class Customer(Base):
-#     __tablename__ = 'customer'
+class Customer(Base):
+    __tablename__ = 'customer'
 
-#     # name
-#     country_code = Column(String)
-#     phone_number = Column(String, unique=True, index=True)                      # telefon numarası
-#     black_listed = Column(Boolean)                                              # kara listede mi?
+    country_code = Column(String)
+    phone_number = Column(String, unique=True, index=True)                      # telefon numarası
+    black_listed = Column(Boolean)                                              # kara listede mi?
 
-#     # relations
+     # relations
+    events = Column(JSON, nullable=True)
 
 
 # # ----------------------------------------------------------------------------------------------

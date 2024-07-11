@@ -33,18 +33,18 @@ async def create_process(user: user_dependency, db: db_dependency, schema: Proce
     """
     example: {
         "name": "GELİN",
-        "department_id": 1,
         "duration": 120,
+        "department_id": 1,
         "attributes": {
-            "optional_makeup_id": {"int": "gt=0"},
-            "hair_stylist_id": {"int": "gt=0"},
-            "is_complete": false,
-            "is_tst": {"bool": "default=False"},
-            "downpayment": {"float": "ge=0"},
-            "plus": {"int": "ge=0"},
-            "payment_type_id": {"int": "gt=0"},
-            "remaining_payment": {"float": "ge=0"},
-            "customer_id": {"int": "gt=0"}
+            "optional_makeup_id": {"int" : "gt=0"},
+            "hair_stylist_id": {"int" : "gt=0"},
+            "is_complete": {"bool": "defalut=False"},
+            "is_tst" : {"bool": "defalut=False"},
+            "downpayment": {"float" : "ge=0"},
+            "plus": {"int" : "ge=0"},
+            "payment_type_id": {"int" : "gt=0"},
+            "remaining_payment": {"float" : "ge=0"},
+            "customer_id": {"int" : "gt=0"}
         }
     }
     """

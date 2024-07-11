@@ -29,7 +29,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 logger = logging.getLogger(__name__)
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=EventCreateSchema)
+@router.post("/", status_code=status.HTTP_201_CREATED) #, response_model=EventCreateSchema)
 async def create_event(user: user_dependency, db: db_dependency, schema: EventCreateSchema):
     """
     example: {
@@ -70,20 +70,21 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     # validate details
     try:
         # Validate and create an instance of the dynamic model
-        model_instance = DynamicSchema(**data)
+        model_instance = DynamicSchema(**details)
     except ValidationError as e:
-        raise HTTPException(status_code=400, detail=e)
+        print(e)
+        raise HTTPException(status_code=400, detail='İşlem onaylanmadı. Validasyon Hatası.')
     
     print(model_instance.model_dump())
     details = process_details(db=db, process_id=schema.process_id, details=details)
     
 
-    data = Event(**schema.model_dump(), added_by=user.get('id'))
+    """data = Event(**schema.model_dump(), added_by=user.get('id'))
 
-    """db.add(data)
+    db.add(data)
     db.commit()
-    db.refresh(data)"""
-    return data
+    db.refresh(data)
+    return data"""
 
 
 @router.get("/raw/", response_model=List[EventSchema], status_code=status.HTTP_200_OK)
