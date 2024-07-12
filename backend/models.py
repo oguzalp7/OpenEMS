@@ -151,9 +151,9 @@ class Customer(TimeStampedModel):
     country_code = Column(String)
     phone_number = Column(String, unique=True, index=True)                      # telefon numarası
     black_listed = Column(Boolean)                                              # kara listede mi?
-
     # relations
     events = Column(JSON, nullable=True)
+
 
 
 

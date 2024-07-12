@@ -35,7 +35,7 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     """
     example: {
         "date": "2024-07-05",
-        "time": "09:24:14.771Z",
+        "time": "09:24",
         "process_id": 1,
         "branch_id": 1,
         "employee_id": 1,
