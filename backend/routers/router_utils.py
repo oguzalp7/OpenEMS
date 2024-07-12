@@ -111,3 +111,10 @@ def process_details(db, process_id, details):
     controller = DetailController(db=db, process_id=process_id, details=details)
     
     return controller.execute()
+
+def jaccard_similarity(str1: str, str2: str) -> float:
+    set1 = set(str1)
+    set2 = set(str2)
+    intersection = len(set1 & set2)
+    union = len(set1 | set2)
+    return intersection / union if union != 0 else 0

@@ -4,13 +4,13 @@ from fastapi import APIRouter, Depends, HTTPException, Path,Query
 from sqlalchemy.orm import Session
 from typing import Annotated, List, Dict, Any,Optional
 import json
-from models import Customer, Department
+from models import Customer, Department, Event
 from sqlalchemy import cast, JSON
 from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, convert_result_to_dict
+from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, convert_result_to_dict, jaccard_similarity
 import logging
 
 from schemas.customer import CustomerSchema, CustomerCreateSchema
@@ -57,6 +57,44 @@ def get_customers(db: db_dependency, user: user_dependency, skip: int = 0, limit
 async def get_raw_customer(user: user_dependency, db: db_dependency, customer_id: int):
     check_privileges(user, 1)
     return get_item_raw(db=db, table=Customer, index=customer_id)
+
+@router.get('/', status_code=status.HTTP_200_OK)
+def get_processed_customers(user: user_dependency, db: db_dependency, p: Optional[str] = Query(None), n: Optional[str] = Query(None), bl: Optional[bool] = Query(False), skip: int = 0, limit: int = 10):
+    """
+        params: 
+        p => phone number: str
+        n => name: str
+        bl => black listed: bool
+    """
+    check_privileges(user, 1)
+    
+    process_api_columns = ['ID', 'ADI', 'ÜLKE KODU', 'TELEFON NUMARASI', 'KARA LİSTE']
+    
+    query = db.query(
+        Customer.id,
+        Customer.name,
+        Customer.country_code,
+        Customer.phone_number,
+        Customer.black_listed
+    )
+
+    if p is not None:
+        query = query.filter(Customer.phone_number == p)
+        if query.count() == 0 :
+            raise HTTPException(status_code=404, detail="İstenen Telefon Numarasına Sahip Müşteri Bulunamadı.")
+        
+    if n is not None:
+        query = query.filter(jaccard_similarity(Customer.name, n) > 0.5)
+        if query.count() == 0 :
+            raise HTTPException(status_code=404, detail="Müşteri Bulunamadı.")
+        
+    if bl is not None:
+        query = query.filter(Customer.black_listed == bl)
+        if query.count() == 0 :
+            raise HTTPException(status_code=404, detail="İstenen Kara Liste Durumunda Müşteri Bulunamadı.") 
+        
+    query = query.offset(skip).limit(limit).all()         
+    return [convert_result_to_dict(row, process_api_columns) for row in query]
 
 @router.put("/{customer_id}", response_model=CustomerCreateSchema, status_code=status.HTTP_201_CREATED)
 def update_customer(customer_id: int, schema: CustomerCreateSchema, db: db_dependency, user: user_dependency):

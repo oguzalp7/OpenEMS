@@ -129,10 +129,6 @@ def get_processed_process_prices(user: user_dependency, db: db_dependency, e: Op
         if query.count() == 0 :
                 raise HTTPException(status_code=404, detail="İşlemin İşlem Ücreti Bulunamadı.")
     
-    query = query.filter(cast(Process.attributes['is_complete'], JSON) == True)
-    if query.count() == 0 :
-        raise HTTPException(status_code=404, detail="Departmanda Tamamlanmış İşlem Bulunamadı.")
-    
     query = query.offset(skip).limit(limit).all()    
     return [convert_result_to_dict(row, process_price_api_columns) for row in query]
 
@@ -232,12 +228,13 @@ async def export_process_prices(db: db_dependency, user: user_dependency, b: Opt
                 ]
     else:
         if dep is not None:
-            process_prices = process_prices.filter(Department.id == dep)
-            if process_prices.count() == 0 :
+            process_prices = process_prices.filter(Department.id == dep).all()
+            if process_prices is None :
                 raise HTTPException(status_code=404, detail="Departmanda İşlem Ücreti Bulunamadı.")
             data = [
             {
                     "İşlem Ücret ID": pp.id,
+                    "Şube": pp.branch_name,
                     "Çalışan": pp.employee_name,
                     "İşlem": pp.process_name,
                     "Ücret": pp.price,

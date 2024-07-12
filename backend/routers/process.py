@@ -94,12 +94,7 @@ def get_processed_processes(user: user_dependency, db: db_dependency, dep: Optio
         query = query.filter(Department.id == dep)
         if query.count() == 0 :
                 raise HTTPException(status_code=404, detail="Departmanda İşlem Bulunamadı.")
-        else:
-            query = query.filter(cast(Process.attributes['is_complete'], JSON) == True)
-           
-            if query.count() == 0 :
-                raise HTTPException(status_code=404, detail="Departmanda Tamamlanmış İşlem Bulunamadı.")
-    
+        
     query = query.offset(skip).limit(limit).all()         
     return [convert_result_to_dict(row, process_api_columns) for row in query]
 
