@@ -103,9 +103,6 @@ class Employee(Base):
     balance = Column(Float)                                                     # çalışan bakiyesi
     employment_status = Column(Boolean, default=True)                           # çalışma durumu (aktif-pasif) 
     
-    #user = relationship("User", back_populates="employee", uselist=False)
-
-    #user = relationship("User", back_populates="employee", uselist=False, remote_side=[User.employee_id],primaryjoin="Employee.user_id == remote(User.id)")
     branch = relationship("Branch", back_populates="employees")
     department = relationship("Department", back_populates="employees")
     employment_type = relationship("EmploymentType", back_populates="employees")

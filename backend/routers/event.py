@@ -40,7 +40,7 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
         "branch_id": 1,
         "employee_id": 1,
         "description": "test hello world",
-        "is_complete": false,
+        "status": "scheduled",
         "details": {
                     "optional_makeup_id": 1,
                     "hair_stylist_id": 2,

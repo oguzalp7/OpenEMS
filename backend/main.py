@@ -41,9 +41,6 @@ app.include_router(event.router)
 # - activate virtual environment: "..\..\appointment-v2\backend\fastapienv\Scripts\activate"
 # - run uvicorn: python -m uvicorn main:app --reload
 
-# TODO List @05.07.2024
-# - Add data || details to events.
-# - Create an API endpoint for creating both User & Employee at the same time. (Gülbera) DONE!
-# - Add Payment-Type Router (API Endpoints) (İrem)
-# - Add Customers Table
+# TODO's:
+# - Create Payments Table
 
