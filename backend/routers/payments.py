@@ -44,9 +44,9 @@ async def create_payment(db: db_dependency, user: user_dependency, schema:Paymen
         
         data = Payments(**schema.model_dump(), added_by=user.get('id'))
     
-        # db.add(data)
-        # db.commit()
-        # db.refresh(data)
+        db.add(data)
+        db.commit()
+        db.refresh(data)
 
         remaining_payment = event_query.details['remaining_payment'] - schema.amount
 

@@ -8,3 +8,4 @@ backend/playground.py
 
 backend/__pycache__/
 backend/schemas/__pycache__/
+backend/schemas/__pycache__
