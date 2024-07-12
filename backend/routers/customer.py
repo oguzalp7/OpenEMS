@@ -5,12 +5,12 @@ from sqlalchemy.orm import Session
 from typing import Annotated, List, Dict, Any,Optional
 import json
 from models import Customer, Department
-from sqlalchemy import cast, JSON
+from sqlalchemy import cast, JSON, func
 from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, convert_result_to_dict, jaccard_similarity
+from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, convert_result_to_dict
 import logging
 
 from schemas.customer import CustomerSchema, CustomerCreateSchema
@@ -80,14 +80,14 @@ def get_processed_customers(user: user_dependency, db: db_dependency, p: Optiona
         Customer.phone_number,
         Customer.black_listed
     )
-
+    
     if p is not None:
         query = query.filter(Customer.phone_number == p)
         if query.count() == 0 :
             raise HTTPException(status_code=404, detail="İstenen Telefon Numarasına Sahip Müşteri Bulunamadı.")
         
     if n is not None:
-        query = query.filter(jaccard_similarity(Customer.name, n) > 0.5)
+        query = query.filter(func.lower(func.replace(Customer.name, " ", "")).contains(n))
         if query.count() == 0 :
             raise HTTPException(status_code=404, detail="Müşteri Bulunamadı.")
         
@@ -95,7 +95,7 @@ def get_processed_customers(user: user_dependency, db: db_dependency, p: Optiona
         query = query.filter(Customer.black_listed == bl)
         if query.count() == 0 :
             raise HTTPException(status_code=404, detail="İstenen Kara Liste Durumunda Müşteri Bulunamadı.") 
-        
+      
     query = query.offset(skip).limit(limit).all()         
     return [convert_result_to_dict(row, process_api_columns) for row in query]
 

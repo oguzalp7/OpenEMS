@@ -124,9 +124,3 @@ makeup_event_foreign_key_mapping = {
     'payment_type_id': {'table': PaymentTypes, 'column': PaymentTypes.id, 'related_columns': [PaymentTypes.name]}
 }
 
-def jaccard_similarity(str1: str, str2: str) -> float:
-    set1 = set(str1)
-    set2 = set(str2)
-    intersection = len(set1 & set2)
-    union = len(set1 | set2)
-    return intersection / union if union != 0 else 0
