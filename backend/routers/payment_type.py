@@ -7,7 +7,7 @@ from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from backend.routers.router_utils import check_privileges
+from .router_utils import check_privileges
 import logging
 
 from schemas.payment_type import PaymentType

@@ -5,9 +5,12 @@ from sqlalchemy.orm import Session
 
 from pydantic import BaseModel, create_model, Field, ValidationError
 from typing import Any, Dict, Type
-
+from models import Process, Customer, PaymentTypes, Employee
 from datetime import datetime
 import pytz
+
+from .details_controller import DetailController
+
 
 
 def create_dynamic_model(name: str, attributes: Dict[str, Dict[str, str]]) -> Type[BaseModel]:
@@ -58,8 +61,6 @@ def check_privileges(user: dict, required_level: int):
     if not user.get('auth') >= required_level:
         raise HTTPException(status_code=403, detail='İçeriğe erişim yetkiniz bulunmamaktadır.')
     
-
-
 def convert_result_to_dict(result, columns):
     if result:
         return dict(zip(columns, result))
@@ -99,6 +100,28 @@ def convert_timestamp_to_date_gmt3(timestamp_str):
 """
 https://blabla.com/api?date=05-05-2024&dep=1&t=1720181953
 """
-# TODO: Implement this function!
-def process_details(db, process_id, details):
-    return {}
+
+def process_details(db, process_id, details, schema):
+
+    process_query = db.query(Process).filter(Process.id == process_id).first()
+
+    if process_query is None:
+        raise HTTPException(status_code=404, detail='İşlem Bulunamadı.')
+    
+    controller = DetailController(db=db, process_id=process_id, details=details, schema=schema)
+
+    details = controller.execute()
+    
+    del controller
+
+    return details
+
+# Mapping of detail keys to their corresponding tables and columns
+makeup_event_foreign_key_mapping = {
+    'customer_id': {'table': Customer, 'column': Customer.id, 'related_columns': [Customer.country_code, Customer.phone_number, Customer.name], 'related_labels': ['ÜLKE', 'TELEFON', 'AD-SOYAD']},
+    'optional_makeup_id': {'table': Employee, 'column': Employee.id, 'related_columns': [Employee.name]},
+    'hair_stylist_id': {'table': Employee, 'column': Employee.id, 'related_columns': [Employee.name]},
+    'payment_type_id': {'table': PaymentTypes, 'column': PaymentTypes.id, 'related_columns': [PaymentTypes.name]}
+}
+
+
