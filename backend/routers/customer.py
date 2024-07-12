@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, HTTPException, Path,Query
 from sqlalchemy.orm import Session
 from typing import Annotated, List, Dict, Any,Optional
 import json
-from models import Customer, Department, Event
+from models import Customer, Department
 from sqlalchemy import cast, JSON
 from database import SessionLocal
 from starlette import status
@@ -37,7 +37,10 @@ async def create_customer(user: user_dependency, db: db_dependency, schema: Cust
         "phone_number": "5555555555",
         "black_listed": False
         "events": {
-        }
+                "past_events" : [
+                1, 2, 3
+                ]
+            }
     }
     """
     check_privileges(user, 5)

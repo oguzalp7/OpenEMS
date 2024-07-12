@@ -27,3 +27,4 @@ backend/schemas/__pycache__/process.cpython-312.pyc
 backend/schemas/__pycache__/process_price.cpython-312.pyc
 backend/schemas/__pycache__/user.cpython-312.pyc
 backend/schemas/__pycache__/user_employee.cpython-312.pyc
+backend/schemas/__pycache__/customer.cpython-311.pyc

@@ -31,22 +31,220 @@ logger = logging.getLogger(__name__)
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=ProcessCreateSchema)
 async def create_process(user: user_dependency, db: db_dependency, schema: ProcessCreateSchema): 
     """
-    example: {
+    examples: "department_1": [
+        {
         "name": "GELİN",
         "duration": 120,
         "department_id": 1,
         "attributes": {
-            "optional_makeup_id": {"int" : "gt=0"},
-            "hair_stylist_id": {"int" : "gt=0"},
-            "is_complete": {"bool": "defalut=False"},
-            "is_tst" : {"bool": "defalut=False"},
-            "downpayment": {"float" : "ge=0"},
-            "plus": {"int" : "ge=0"},
-            "payment_type_id": {"int" : "gt=0"},
-            "remaining_payment": {"float" : "ge=0"},
-            "customer_id": {"int" : "gt=0"}
-        }
-    }
+            "optional_makeup_id": {"int": "gt=0"},
+            "hair_stylist_id": {"int": "gt=0"},
+            "is_tst": {"bool": "default=False"},
+            "downpayment": {"float": "ge=0"},
+            "plus": {"int": "ge=0"},
+            "payment_type_id": {"int": "gt=0"},
+            "remaining_payment": {"float": "ge=0"},
+            "customer_id": {"int": "gt=0"},
+            "country": {"str": "default=''"},
+            "city": {"str": "default=''"},
+            "hotel": {"str": "default=''"}
+        },
+        {
+        "name": "KINA",
+        "duration": 120,
+        "department_id": 1,
+        "attributes": {
+            "optional_makeup_id": {"int": "gt=0"},
+            "hair_stylist_id": {"int": "gt=0"},
+            "is_tst": {"bool": "default=False"},
+            "downpayment": {"float": "ge=0"},
+            "plus": {"int": "ge=0"},
+            "payment_type_id": {"int": "gt=0"},
+            "remaining_payment": {"float": "ge=0"},
+            "customer_id": {"int": "gt=0"},
+            "country": {"str": "default=''"},
+            "city": {"str": "default=''"},
+            "hotel": {"str": "default=''"}
+        },
+        {
+            "name": "DIŞ ÇEKİM",
+            "duration": 120,
+            "department_id": 1,
+            "attributes": {
+                "optional_makeup_id": {"int": "gt=0"},
+                "hair_stylist_id": {"int": "gt=0"},
+                "is_tst": {"bool": "default=False"},
+                "downpayment": {"float": "ge=0"},
+                "plus": {"int": "ge=0"},
+                "payment_type_id": {"int": "gt=0"},
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "country": {"str": "default=''"},
+                "city": {"str": "default=''"},
+                "hotel": {"str": "default=''"}
+            }
+        },
+        {
+            "name": "NİŞAN",
+            "duration": 120,
+            "department_id": 1,
+            "attributes": {
+                "optional_makeup_id": {"int": "gt=0"},
+                "hair_stylist_id": {"int": "gt=0"},
+                "is_tst": {"bool": "default=False"},
+                "downpayment": {"float": "ge=0"},
+                "plus": {"int": "ge=0"},
+                "payment_type_id": {"int": "gt=0"},
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "country": {"str": "default=''"},
+                "city": {"str": "default=''"},
+                "hotel": {"str": "default=''"}
+            }
+        },
+        {
+            "name": "ÖZEL GÜN",
+            "duration": 120,
+            "department_id": 1,
+            "attributes": {
+                "optional_makeup_id": {"int": "gt=0"},
+                "hair_stylist_id": {"int": "gt=0"},
+                "is_tst": {"bool": "default=False"},
+                "downpayment": {"float": "ge=0"},
+                "plus": {"int": "ge=0"},
+                "payment_type_id": {"int": "gt=0"},
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "country": {"str": "default=''"},
+                "city": {"str": "default=''"},
+                "hotel": {"str": "default=''"}
+            }
+        },
+        {
+            "name": "OTEL",
+            "duration": 360,
+            "department_id": 1,
+            "attributes": {
+                "optional_makeup_id": {"int": "gt=0"},
+                "hair_stylist_id": {"int": "gt=0"},
+                "is_tst": {"bool": "default=False"},
+                "downpayment": {"float": "ge=0"},
+                "plus": {"int": "ge=0"},
+                "payment_type_id": {"int": "gt=0"},
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "country": {"str": "default=''"},
+                "city": {"str": "default=''"},
+                "hotel": {"str": "default=''"}
+            }
+        },
+        {
+            "name": "ŞEHİRDIŞI",
+            "duration": 1440,
+            "department_id": 1,
+            "attributes": {
+                "optional_makeup_id": {"int": "gt=0"},
+                "hair_stylist_id": {"int": "gt=0"},
+                "is_tst": {"bool": "default=False"},
+                "downpayment": {"float": "ge=0"},
+                "plus": {"int": "ge=0"},
+                "payment_type_id": {"int": "gt=0"},
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "country": {"str": "default=''"},
+                "city": {"str": "default=''"},
+                "hotel": {"str": "default=''"}
+            }
+        },
+        {
+            "name": "YURTDIŞI",
+            "duration": 4320,
+            "department_id": 1,
+            "attributes": {
+                "optional_makeup_id": {"int": "gt=0"},
+                "hair_stylist_id": {"int": "gt=0"},
+                "is_tst": {"bool": "default=False"},
+                "downpayment": {"float": "ge=0"},
+                "plus": {"int": "ge=0"},
+                "payment_type_id": {"int": "gt=0"},
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "country": {"str": "default=''"},
+                "city": {"str": "default=''"},
+                "hotel": {"str": "default=''"}
+            }
+        },
+    ],
+    department_2: [
+        {
+            "name": "SAÇ BAKIM",
+            "duration": 120,
+            "department_id": 2,
+            "attributes": {
+                "is_tst": {"bool": "default=False"},
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"}
+            }
+        },
+    ],
+    department_3: [
+        {
+            "name": "JEL TIRNAK",
+            "duration": 120,
+            "department_id": 3,
+            "attributes": {
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "num_nail_arts": {"int": "gt=0"}
+            }
+        },
+        {
+            "name": "NAIL-ART",
+            "duration": 120,
+            "department_id": 3,
+            "attributes": {}
+        },
+        {
+            "name": "KALICI OJE",
+            "duration": 120,
+            "department_id": 3,
+            "attributes": {
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "num_nail_arts": {"int": "gt=0"}
+            }
+        },
+        {
+            "name": "DOLGU",
+            "duration": 120,
+            "department_id": 3,
+            "attributes": {
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "num_nail_arts": {"int": "gt=0"},
+            }
+        },
+        {
+            "name": "MANİKÜR",
+            "duration": 120,
+            "department_id": 3,
+            "attributes": {
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "num_nail_arts": {"int": "gt=0"},
+            }
+        },
+        {
+            "name": "PEDİKÜR",
+            "duration": 120,
+            "department_id": 3,
+            "attributes": {
+                "remaining_payment": {"float": "ge=0"},
+                "customer_id": {"int": "gt=0"},
+                "num_nail_arts": {"int": "gt=0"},
+            }
+        },
+    ] 
     """
     check_privileges(user, 5)
 

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 
 from pydantic import BaseModel, create_model, Field, ValidationError
 from typing import Any, Dict, Type
-from models import Process
+from models import Process, Customer, PaymentTypes, Employee
 from datetime import datetime
 import pytz
 
@@ -100,17 +100,29 @@ def convert_timestamp_to_date_gmt3(timestamp_str):
 """
 https://blabla.com/api?date=05-05-2024&dep=1&t=1720181953
 """
-# TODO: Implement this function!
-def process_details(db, process_id, details):
+
+def process_details(db, process_id, details, schema):
 
     process_query = db.query(Process).filter(Process.id == process_id).first()
 
     if process_query is None:
         raise HTTPException(status_code=404, detail='İşlem Bulunamadı.')
     
-    controller = DetailController(db=db, process_id=process_id, details=details)
+    controller = DetailController(db=db, process_id=process_id, details=details, schema=schema)
+
+    details = controller.execute()
     
-    return controller.execute()
+    del controller
+
+    return details
+
+# Mapping of detail keys to their corresponding tables and columns
+makeup_event_foreign_key_mapping = {
+    'customer_id': {'table': Customer, 'column': Customer.id, 'related_columns': [Customer.country_code, Customer.phone_number, Customer.name], 'related_labels': ['ÜLKE', 'TELEFON', 'AD-SOYAD']},
+    'optional_makeup_id': {'table': Employee, 'column': Employee.id, 'related_columns': [Employee.name]},
+    'hair_stylist_id': {'table': Employee, 'column': Employee.id, 'related_columns': [Employee.name]},
+    'payment_type_id': {'table': PaymentTypes, 'column': PaymentTypes.id, 'related_columns': [PaymentTypes.name]}
+}
 
 def jaccard_similarity(str1: str, str2: str) -> float:
     set1 = set(str1)

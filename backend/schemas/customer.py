@@ -8,4 +8,4 @@ class CustomerSchema(BaseNameSchema):
     black_listed: bool = Field(default=False)
 
 class CustomerCreateSchema(CustomerSchema):
-    events: Dict[str, Any] 
+    events: Dict[str, Any] = Field(default={'past_events': []})
