@@ -1,18 +1,19 @@
 # routers/event.py
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
-from sqlalchemy.orm import Session
-from typing import Annotated, List, Optional
+from sqlalchemy.orm import Session, aliased
+from typing import Annotated, List, Optional, Dict
 from sqlalchemy import func
 
 from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from .router_utils import check_privileges, process_details, convert_result_to_dict, delete_item, get_item_raw, get_items_raw, create_dynamic_model, ValidationError, convert_timestamp_to_date_gmt3
+from .router_utils import check_privileges, process_details, convert_result_to_dict, delete_item, get_item_raw, get_items_raw, create_dynamic_model, ValidationError, convert_timestamp_to_date_gmt3, makeup_event_foreign_key_mapping, fetch_related_data, merge_and_flatten_dicts
 import logging
+import json
 
-from models import Event, Process, Department
+from models import Event, Process, Department, Employee
 
 from schemas.event import EventSchema, EventCreateSchema
 
@@ -29,7 +30,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 logger = logging.getLogger(__name__)
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=EventCreateSchema)
+@router.post("/", status_code=status.HTTP_201_CREATED) #, response_model=EventCreateSchema)
 async def create_event(user: user_dependency, db: db_dependency, schema: EventCreateSchema):
     """
     example: {
@@ -39,6 +40,7 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
         "branch_id": 1,
         "employee_id": 1,
         "description": "test hello world",
+        "status": "scheduled",
         "details": {
                     "optional_makeup_id": 1,
                     "hair_stylist_id": 2,
@@ -65,15 +67,26 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     DynamicSchema = create_dynamic_model("AttributeSchema", attributes=attributes)
     
     
-    data = schema.details
-    
+    details = schema.details
+
     # validate details
     try:
         # Validate and create an instance of the dynamic model
-        model_instance = DynamicSchema(**data)
+        model_instance = DynamicSchema(**details)
     except ValidationError as e:
-        raise HTTPException(status_code=400, detail=e)
+        print(e)
+        raise HTTPException(status_code=400, detail='İşlem onaylanmadı. Validasyon Hatası.')
     
+    print(model_instance.model_dump())
+    
+    #print(model_instance.model_dump())
+    details = process_details(db=db, process_id=schema.process_id, details=details, schema=schema)
+    # print(details)
+    
+    schema.details = details
+
+    #print(schema.model_dump())
+
 
     data = Event(**schema.model_dump(), added_by=user.get('id'))
 
@@ -90,7 +103,7 @@ def get_events_raw(db: db_dependency, user: user_dependency, skip: int = 0, limi
     return get_items_raw(db=db, table=Event, skip=skip, limit=limit)
 
 @router.get('/', status_code=status.HTTP_200_OK)
-def get_events_by_depertment(db: db_dependency, user: user_dependency, t: Optional[str] = Query(None), dep: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
+def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Optional[str] = Query(None), dep: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
     """
         params: 
         t => timestamp: str
@@ -107,11 +120,13 @@ def get_events_by_depertment(db: db_dependency, user: user_dependency, t: Option
             raise HTTPException(status_code=404, detail='Departman bulunamadı.')
         
         
-    cols = ['id', 'date', 'time', 'process_name', 'department_name']
+    cols = ['id', 'date', 'time', 'employee_name', 'status', 'process', 'department']
     query = db.query(
             Event.id,
             Event.date,
             Event.time,
+            Employee.name.label('employee_name'),
+            Event.status,
             #Event.details,
             #Event.details['downpayment'],
             Process.name.label('process_name'),
@@ -119,17 +134,21 @@ def get_events_by_depertment(db: db_dependency, user: user_dependency, t: Option
             Department.name.label('department_name')
         )\
         .join(Process, Event.process_id == Process.id)\
-        .join(Department, Process.department_id == Department.id)
+        .join(Department, Process.department_id == Department.id)\
+        .join(Employee, Employee.id == Event.employee_id)
     
     if dep is not None:
         query = query.filter(Department.id == dep)
         keys_query = db.query(Process.attributes).filter(dep == Process.department_id).first()
+        
         detail_keys = list(keys_query[0].keys())
-        #print(detail_keys)
+        
         cols.extend(detail_keys)
+        
         for key in detail_keys:
             query = query.add_columns(func.json_extract(Event.details, f'$.{key}').label(key))
-
+        
+       
     if t is not None:
         # convert from timestamp to datetime.date
         date_ = convert_timestamp_to_date_gmt3(t)
@@ -138,8 +157,23 @@ def get_events_by_depertment(db: db_dependency, user: user_dependency, t: Option
     
 
     results = query.offset(skip).limit(limit).all()
-    return [convert_result_to_dict(row, cols) for row in results]
+    results = [convert_result_to_dict(row, cols) for row in results]
+
+    # print(results)
     
+
+    if dep is not None:
+        processed_results = []
+        for row in results:
+            related_data = fetch_related_data(db, row, makeup_event_foreign_key_mapping)
+            processed_results.append(merge_and_flatten_dicts(row, related_data))
+        #print(processed_results)
+        return processed_results
+        
+    return results
+
+
+
 
 @router.get('/{event_id}', status_code=status.HTTP_200_OK, response_model=EventCreateSchema)
 async def get_raw_event(user: user_dependency, db: db_dependency, event_id: int):
@@ -158,8 +192,8 @@ def update_event(event_id: int, schema: EventCreateSchema, db: db_dependency, us
     item.process_id = schema.process_id
     item.branch_id = schema.branch_id
     item.description = schema.description
-    
-    item.details = process_details(db=db, process_id=schema.process_id, details=schema.details)
+    item.status = schema.status
+    item.details = process_details(db=db, process_id=schema.process_id, details=schema.details, schema=schema)
     item.added_by = user.get('id')
 
 

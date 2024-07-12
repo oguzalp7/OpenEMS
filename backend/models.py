@@ -76,13 +76,14 @@ class Department(Base):
         back_populates="departments"
     )
     employees = relationship("Employee", back_populates="department")
-    
+    processes = relationship("Process", back_populates="department")
     
 
 class EmploymentType(Base):
     __tablename__ = 'employment_types'
 
     employees = relationship("Employee", back_populates="employment_type")
+    
 
 
 class Employee(Base):
@@ -102,9 +103,6 @@ class Employee(Base):
     balance = Column(Float)                                                     # çalışan bakiyesi
     employment_status = Column(Boolean, default=True)                           # çalışma durumu (aktif-pasif) 
     
-    #user = relationship("User", back_populates="employee", uselist=False)
-
-    #user = relationship("User", back_populates="employee", uselist=False, remote_side=[User.employee_id],primaryjoin="Employee.user_id == remote(User.id)")
     branch = relationship("Branch", back_populates="employees")
     department = relationship("Department", back_populates="employees")
     employment_type = relationship("EmploymentType", back_populates="employees")
@@ -117,6 +115,7 @@ class Process(Base):
     department_id = Column(Integer, ForeignKey('departments.id'))
     duration = Column(Integer, nullable=True)
     attributes = Column(JSON) 
+    department = relationship("Department", back_populates="processes")
     """
         {
             for pid: 1 (Makyaj Departmanı)
@@ -127,7 +126,7 @@ class Process(Base):
             .
 
         }
-    
+        # toplantı duration=60, attributes = {katilimcilar: [1, 2, 3, 4, ...]}
     """
 
 
@@ -145,25 +144,28 @@ class ProcessPrice(TimeStampedModel):
     price = Column(Float, nullable=False)
 
 # ----------------------------------------------------------------------------------------------
-
-class Customer(Base):
+# consider adding an index to the name @12.07.2024
+class Customer(TimeStampedModel):
     __tablename__ = 'customer'
-
-    # name
+    name = Column(String, index=True)
     country_code = Column(String)
     phone_number = Column(String, unique=True, index=True)                      # telefon numarası
     black_listed = Column(Boolean)                                              # kara listede mi?
-
     # relations
-    # gül
-    # gülbera
-    # gülben
-    # gülnihal
-    
-    # contains
+    events = Column(JSON, nullable=True)
+
+
 
 
 # # ----------------------------------------------------------------------------------------------
+
+class EventStatus(enum.Enum):
+    scheduled = "scheduled"
+    completed = "completed"
+    cancelled = "cancelled"
+    postponed = "postponed"
+    suspended = "suspended"
+
 
 class Event(TimeStampedModel):
     __tablename__ = 'events'
@@ -175,40 +177,15 @@ class Event(TimeStampedModel):
     branch_id = Column(Integer, ForeignKey("branches.id"))
     employee_id = Column(Integer, ForeignKey('employees.id'))
     description = Column(String)
+    
+    status = Column(Enum(EventStatus), default=EventStatus.scheduled)
     details = Column(JSON, nullable=True)    
+# -------------------------------------------------------------------------------------------------
 
+class Payments(TimeStampedModel):
+    __tablename__ = 'payments'
 
-
-
-# class Appointment(Event):
-#     __abstract__ = True
+    event_id = Column(Integer, ForeignKey('events.id')) 
+    payment_type_id = Column(Integer, ForeignKey('payment_types.id'))
+    amount = Column(Float)
     
-#     process_id = Column(Integer, ForeignKey('process.id'))
-#     payment_type_id = Column(Integer, ForeignKey("payment_types.id"), nullable=True)
-#     remaining_payment = Column(Float)
-#     is_complete = Column(Boolean)
-
-#     customer_id = Column(Integer, ForeignKey('customer.id'))
-#     # add customer relations
-
-
-# class MakeUpAppointment(Appointment):
-#     __tablename__ = 'makeup_appointments'
-
-#     id = Column(Integer, ForeignKey('events.id'), primary_key=True)
-#     optional_makeup_id = Column(Integer, nullable=True)
-#     hair_stylist_id = Column(Integer, nullable=True)
-#     country = Column(String)
-#     city = Column(String)
-#     hotel = Column(String)
-#     plus = Column(Integer)
-#     is_hijab = Column(Boolean)
-#     down_payment = Column(Float)
-    
-
-# class NailArtAppointment(Appointment):
-#     __tablename__ = 'nailart_appointments'
-#     id = Column(Integer, ForeignKey('events.id'), primary_key=True)
-#     plus = Column(Integer)
-
-# # ----------------------------------------------------------------------------------------------
