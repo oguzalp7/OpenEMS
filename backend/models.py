@@ -144,10 +144,10 @@ class ProcessPrice(TimeStampedModel):
     price = Column(Float, nullable=False)
 
 # ----------------------------------------------------------------------------------------------
-
-class Customer(Base):
+# consider adding an index to the name @12.07.2024
+class Customer(TimeStampedModel):
     __tablename__ = 'customer'
-
+    name = Column(String, index=True)
     country_code = Column(String)
     phone_number = Column(String, unique=True, index=True)                      # telefon numarası
     black_listed = Column(Boolean)                                              # kara listede mi?
@@ -182,10 +182,10 @@ class Event(TimeStampedModel):
     details = Column(JSON, nullable=True)    
 # -------------------------------------------------------------------------------------------------
 
-# class Payments(TimeStampedModel):
-#     __tablename__ = 'payments'
+class Payments(TimeStampedModel):
+    __tablename__ = 'payments'
 
-#     event_id = Column(Integer, ForeignKey('events.id')) 
-#     payment_type_id = Column(Integer, ForeignKey('payment_types.id'))
-#     amount = Column(Float)
+    event_id = Column(Integer, ForeignKey('events.id')) 
+    payment_type_id = Column(Integer, ForeignKey('payment_types.id'))
+    amount = Column(Float)
     
