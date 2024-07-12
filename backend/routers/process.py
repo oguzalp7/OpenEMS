@@ -1,16 +1,16 @@
 # routers/process.py
 
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path,Query
 from sqlalchemy.orm import Session
-from typing import Annotated, List
-
-from models import Process
-
+from typing import Annotated, List, Dict, Any,Optional
+import json
+from models import Process, Department
+from sqlalchemy import cast, JSON
 from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw
+from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, convert_result_to_dict
 import logging
 
 from schemas.process import ProcessSchema, ProcessCreateSchema
@@ -254,16 +254,47 @@ async def create_process(user: user_dependency, db: db_dependency, schema: Proce
     db.refresh(data)
     return data
 
-@router.get("/", response_model=List[ProcessSchema], status_code=status.HTTP_200_OK)
+@router.get("/raw/", response_model=List[ProcessSchema], status_code=status.HTTP_200_OK)
 def get_processes(db: db_dependency, user: user_dependency, skip: int = 0, limit: int = 10):
     check_privileges(user, 1)
-    
     return get_items_raw(db=db, table=Process, skip=skip, limit=limit)
 
 @router.get('/{process_id}', status_code=status.HTTP_200_OK, response_model=ProcessCreateSchema)
 async def get_raw_process(user: user_dependency, db: db_dependency, process_id: int):
     check_privileges(user, 1)
     return get_item_raw(db=db, table=Process, index=process_id)
+
+@router.get('/', status_code=status.HTTP_200_OK)
+def get_processed_processes(user: user_dependency, db: db_dependency, dep: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
+    """
+        params: 
+        dep => department id: int
+    """
+    check_privileges(user, 1)
+
+    if dep is not None:
+        department_query = db.query(Department).filter(Department.id == dep).first()
+        if department_query is None: 
+            raise HTTPException(status_code=404, detail='Departman Bulunamadı.')
+        
+    process_api_columns = ['ID', 'ADI', 'SÜRE', 'DEPARTMAN', 'ÖZELLİKLER']
+    
+    query = db.query(
+        Process.id,
+        Process.name,
+        Process.duration,
+        Process.department_id,
+        Process.attributes
+    )\
+    .join(Department, Process.department_id == Department.id)
+ 
+    if dep is not None:
+        query = query.filter(Department.id == dep)
+        if query.count() == 0 :
+                raise HTTPException(status_code=404, detail="Departmanda İşlem Bulunamadı.")
+        
+    query = query.offset(skip).limit(limit).all()         
+    return [convert_result_to_dict(row, process_api_columns) for row in query]
 
 @router.put("/{process_id}", response_model=ProcessCreateSchema, status_code=status.HTTP_201_CREATED)
 def update_process(process_id: int, schema: ProcessCreateSchema, db: db_dependency, user: user_dependency):

@@ -156,6 +156,10 @@ class Customer(TimeStampedModel):
 
 
 
+    # relations
+    events = Column(JSON, nullable=True)
+
+
 
 # # ----------------------------------------------------------------------------------------------
 

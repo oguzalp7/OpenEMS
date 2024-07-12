@@ -42,6 +42,3 @@ app.include_router(payments.router)
 # - activate virtual environment: "..\..\appointment-v2\backend\fastapienv\Scripts\activate"
 # - run uvicorn: python -m uvicorn main:app --reload
 
-# TODO's:
-# - Create Payments Table
-

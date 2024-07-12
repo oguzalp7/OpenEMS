@@ -1,13 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import select, join
-from typing import List, Annotated
+from typing import List, Annotated, Optional
 from models import Employee, Branch, Department, EmploymentType
 from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from .router_utils import check_privileges, convert_result_to_dict
+from .router_utils import check_privileges, convert_result_to_dict, get_item_raw
 
 from schemas.employee import EmployeeCreateUpdateSchema
 import logging
@@ -42,16 +42,39 @@ def create_employee(db: db_dependency, user: user_dependency, schema: EmployeeCr
     return employee
 
 @router.get("/", status_code=status.HTTP_200_OK) #, response_model=List[EmployeeReadSchema])
-def read_employees(db: db_dependency, user: user_dependency, skip: int = 0, limit: int = 10):
+def read_employees(db: db_dependency, user: user_dependency, b: Optional[int] = Query(None),
+dep: Optional[int] = Query(None), et: Optional[int] = Query(None), active: Optional[bool] = Query(True), skip: int = 0, limit: int = 10):
+    """
+        params: 
+        b => branch id: int
+        dep => department id: int
+        et => employment type id: int
+        active => employment status: bool
+    """
     check_privileges(user, 1)
     
+    if b is not None:
+        branch_query = db.query(Branch).filter(Branch.id == b).first()
+        if branch_query is None: 
+            raise HTTPException(status_code=404, detail='Şube bulunamadı.')
+        
+    if dep is not None:
+        department_query = db.query(Department).filter(Department.id == dep).first()
+        if department_query is None: 
+            raise HTTPException(status_code=404, detail='Departman bulunamadı.')
+        
+    if et is not None:
+        employment_type_query = db.query(EmploymentType).filter(EmploymentType.id == et).first()
+        if employment_type_query is None: 
+            raise HTTPException(status_code=404, detail='Çalışma Tipi bulunamadı.')
+        
     employee_api_columns  = [
             'ID', 'AD-SOYAD', 'ÜLKE KODU', 'TELEFON', 'İŞ TANIMI',
             'İŞ BAŞLANGIÇ TARİHİ', 'İŞ ÇIKIŞ TARİHİ', 'MAAŞ',
             'BAKİYE', 'ÇALIŞMA DURUMU', 'ŞUBE', 'DEPARTMAN', 'ÇALIŞMA TİPİ'
         ]
     
-    results = db.query(
+    query = db.query(
             Employee.id,
             Employee.name,
             Employee.country_code,
@@ -62,18 +85,56 @@ def read_employees(db: db_dependency, user: user_dependency, skip: int = 0, limi
             Employee.salary,
             Employee.balance,
             Employee.employment_status,
-            Branch.name.label('branch_name'),
-            Department.name.label('department_name'),
-            EmploymentType.name.label('employment_type_name'),
+            Branch.name.label('ŞUBE'),
+            Department.name.label('DEPARTMAN'),
+            EmploymentType.name.label('ÇALIŞMA TİPİ'),
         )\
         .join(Branch, Employee.branch_id == Branch.id)\
         .join(Department, Employee.department_id == Department.id)\
-        .join(EmploymentType, Employee.employment_type_id == EmploymentType.id)\
-        .offset(skip)\
-        .limit(limit).all()
-    
-    return [convert_result_to_dict(row, employee_api_columns) for row in results]
-    
+        .join(EmploymentType, Employee.employment_type_id == EmploymentType.id)
+
+    if b is not None:
+        query = query.filter(Branch.id == b)
+        if query.count() == 0 :
+            raise HTTPException(status_code=404, detail="Şubede Çalışan Bulunamadı.")
+        else:
+            is_dep_available = False
+            if dep is not None:
+                branch = db.query(Branch).filter(Branch.id==b).first()
+                dep_list=branch.departments
+                for deps in dep_list:
+                    if deps.id == dep:
+                        is_dep_available = True
+                        query = query.filter(Department.id == dep)
+                        if query.count() == 0 :
+                            raise HTTPException(status_code=404, detail="Departmanda Çalışan Bulunamadı.")
+                        
+                if is_dep_available == False:
+                    raise HTTPException(status_code=404, detail="İstenen Şubede İstenen Departman Bulunamadı.")
+    else:
+        if dep is not None:
+            query = query.filter(Department.id == dep)
+            if query.count() == 0 :
+                raise HTTPException(status_code=404, detail="Departmanda Çalışan Bulunamadı.")
+
+    if et is not None:
+        query = query.filter(EmploymentType.id == et) 
+        if query.count() == 0 :
+            raise HTTPException(status_code=404, detail="İstenen Çalışma Tipinde Çalışan Bulunamadı.")
+
+    if active is not None:
+        query = query.filter(Employee.employment_status == active)
+        if query.count() == 0 :
+            raise HTTPException(status_code=404, detail="İstenen Aktiflik Durumunda Çalışan Bulunamadı.")
+
+    query = query.offset(skip).limit(limit).all()
+    return [convert_result_to_dict(row, employee_api_columns) for row in query]
+
+@router.get('/raw/{employee_id}', status_code=status.HTTP_200_OK, response_model=EmployeeCreateUpdateSchema)
+async def get_raw_employee(user: user_dependency, db: db_dependency, employee_id: int):
+    check_privileges(user, 1)
+    return get_item_raw(db=db, table=Employee, index=employee_id)
+   
 
 @router.get("/{employee_id}", status_code=status.HTTP_200_OK)#, response_model=EmployeeCreateUpdateSchema)
 def read_employee(db: db_dependency, user: user_dependency, employee_id: int = Path(gt=0)):

@@ -68,7 +68,6 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     
     
     details = schema.details
-
     # validate details
     try:
         # Validate and create an instance of the dynamic model
@@ -171,7 +170,6 @@ def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Opti
         return processed_results
         
     return results
-
 
 
 
