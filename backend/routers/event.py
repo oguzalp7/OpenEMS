@@ -9,11 +9,7 @@ from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-<<<<<<< HEAD
-from .router_utils import check_privileges, process_details, convert_result_to_dict, delete_item, get_item_raw, get_items_raw, create_dynamic_model, ValidationError, convert_timestamp_to_date_gmt3, makeup_event_foreign_key_mapping
-=======
 from .router_utils import check_privileges, process_details, convert_result_to_dict, delete_item, get_item_raw, get_items_raw, create_dynamic_model, ValidationError, convert_timestamp_to_date_gmt3, makeup_event_foreign_key_mapping, fetch_related_data, merge_and_flatten_dicts
->>>>>>> master_depreciated
 import logging
 import json
 
@@ -39,20 +35,12 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     """
     example: {
         "date": "2024-07-05",
-<<<<<<< HEAD
-        "time": "09:24:14.771Z",
-=======
         "time": "09:24",
->>>>>>> master_depreciated
         "process_id": 1,
         "branch_id": 1,
         "employee_id": 1,
         "description": "test hello world",
-<<<<<<< HEAD
-        "is_complete": false,
-=======
         "status": "scheduled",
->>>>>>> master_depreciated
         "details": {
                     "optional_makeup_id": 1,
                     "hair_stylist_id": 2,
@@ -184,29 +172,6 @@ def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Opti
     return results
 
 
-<<<<<<< HEAD
-def fetch_related_data(db: Session, row: Dict, mapping: Dict) -> Dict:
-    related_data = {}
-    for key, value in row.items():
-        if key in mapping:
-            related_columns = mapping[key]['related_columns'] 
-            column = mapping[key]['column']
-            query = db.query(*related_columns).filter(column == value).first()
-            if query:
-                related_data[key] = dict(zip([col.key for col in related_columns], query))
-    # print(related_data)
-    return related_data
-
-def merge_and_flatten_dicts(base_dict, related_data):
-    for key, value in related_data.items():
-        if isinstance(value, dict):
-            for sub_key, sub_value in value.items():
-                base_dict[f"{key}_{sub_key}"] = sub_value
-        else:
-            base_dict[key] = value
-    return base_dict
-=======
->>>>>>> master_depreciated
 
 @router.get('/{event_id}', status_code=status.HTTP_200_OK, response_model=EventCreateSchema)
 async def get_raw_event(user: user_dependency, db: db_dependency, event_id: int):

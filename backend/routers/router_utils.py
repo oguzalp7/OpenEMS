@@ -5,19 +5,12 @@ from sqlalchemy.orm import Session
 
 from pydantic import BaseModel, create_model, Field, ValidationError
 from typing import Any, Dict, Type
-<<<<<<< HEAD
-from models import Process, Customer, PaymentTypes, Employee
-=======
 from models import Process, Customer, PaymentTypes, Employee, Event
->>>>>>> master_depreciated
 from datetime import datetime
 import pytz
 
 from .details_controller import DetailController
-<<<<<<< HEAD
-=======
 from sqlalchemy import update, func
->>>>>>> master_depreciated
 
 
 
@@ -132,8 +125,6 @@ makeup_event_foreign_key_mapping = {
     'payment_type_id': {'table': PaymentTypes, 'column': PaymentTypes.id, 'related_columns': [PaymentTypes.name]}
 }
 
-<<<<<<< HEAD
-=======
 def update_event_details(db: Session, event_id: int, key: str, value):
     # Get the event
     event = db.query(Event).filter(Event.id == event_id).first()
@@ -176,4 +167,3 @@ def merge_and_flatten_dicts(base_dict, related_data):
         else:
             base_dict[key] = value
     return base_dict
->>>>>>> master_depreciated
