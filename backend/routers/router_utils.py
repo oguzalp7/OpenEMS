@@ -5,11 +5,19 @@ from sqlalchemy.orm import Session
 
 from pydantic import BaseModel, create_model, Field, ValidationError
 from typing import Any, Dict, Type
+<<<<<<< HEAD
 from models import Process, Customer, PaymentTypes, Employee
+=======
+from models import Process, Customer, PaymentTypes, Employee, Event
+>>>>>>> master_depreciated
 from datetime import datetime
 import pytz
 
 from .details_controller import DetailController
+<<<<<<< HEAD
+=======
+from sqlalchemy import update, func
+>>>>>>> master_depreciated
 
 
 
@@ -124,3 +132,48 @@ makeup_event_foreign_key_mapping = {
     'payment_type_id': {'table': PaymentTypes, 'column': PaymentTypes.id, 'related_columns': [PaymentTypes.name]}
 }
 
+<<<<<<< HEAD
+=======
+def update_event_details(db: Session, event_id: int, key: str, value):
+    # Get the event
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if not event:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    # Update the specific key in the details JSON column
+    stmt = (
+        update(Event)
+        .where(Event.id == event_id)
+        .values(details=func.json_set(Event.details, f'$.{key}', value))
+        .execution_options(synchronize_session="fetch")
+    )
+    
+    db.execute(stmt)
+    db.commit()
+
+    # Refresh the event instance to get the updated details
+    db.refresh(event)
+    return event
+
+
+def fetch_related_data(db: Session, row: Dict, mapping: Dict) -> Dict:
+    related_data = {}
+    for key, value in row.items():
+        if key in mapping:
+            related_columns = mapping[key]['related_columns'] 
+            column = mapping[key]['column']
+            query = db.query(*related_columns).filter(column == value).first()
+            if query:
+                related_data[key] = dict(zip([col.key for col in related_columns], query))
+    # print(related_data)
+    return related_data
+
+def merge_and_flatten_dicts(base_dict, related_data):
+    for key, value in related_data.items():
+        if isinstance(value, dict):
+            for sub_key, sub_value in value.items():
+                base_dict[f"{key}_{sub_key}"] = sub_value
+        else:
+            base_dict[key] = value
+    return base_dict
+>>>>>>> master_depreciated

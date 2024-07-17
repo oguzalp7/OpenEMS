@@ -103,9 +103,6 @@ class Employee(Base):
     balance = Column(Float)                                                     # çalışan bakiyesi
     employment_status = Column(Boolean, default=True)                           # çalışma durumu (aktif-pasif) 
     
-    #user = relationship("User", back_populates="employee", uselist=False)
-
-    #user = relationship("User", back_populates="employee", uselist=False, remote_side=[User.employee_id],primaryjoin="Employee.user_id == remote(User.id)")
     branch = relationship("Branch", back_populates="employees")
     department = relationship("Department", back_populates="employees")
     employment_type = relationship("EmploymentType", back_populates="employees")
@@ -147,13 +144,17 @@ class ProcessPrice(TimeStampedModel):
     price = Column(Float, nullable=False)
 
 # ----------------------------------------------------------------------------------------------
-
-class Customer(Base):
+# consider adding an index to the name @12.07.2024
+class Customer(TimeStampedModel):
     __tablename__ = 'customer'
-
+    name = Column(String, index=True)
     country_code = Column(String)
     phone_number = Column(String, unique=True, index=True)                      # telefon numarası
     black_listed = Column(Boolean)                                              # kara listede mi?
+    # relations
+    events = Column(JSON, nullable=True)
+
+
 
     # relations
     events = Column(JSON, nullable=True)
@@ -185,10 +186,10 @@ class Event(TimeStampedModel):
     details = Column(JSON, nullable=True)    
 # -------------------------------------------------------------------------------------------------
 
-# class Payments(TimeStampedModel):
-#     __tablename__ = 'payments'
+class Payments(TimeStampedModel):
+    __tablename__ = 'payments'
 
-#     event_id = Column(Integer, ForeignKey('events.id')) 
-#     payment_type_id = Column(Integer, ForeignKey('payment_types.id'))
-#     amount = Column(Float)
+    event_id = Column(Integer, ForeignKey('events.id')) 
+    payment_type_id = Column(Integer, ForeignKey('payment_types.id'))
+    amount = Column(Float)
     

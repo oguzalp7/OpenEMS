@@ -28,14 +28,19 @@ class DetailController:
             'MANİKÜR': 'process_nailart',
             'PEDİKÜR': 'process_nailart',
             'SAÇ BAKIM': 'process_hair',
+            'GELİN+': '',
         }
 
     def process_makeup_studio_default(self):
         print('default studio')
         # query data from Process Price tables and make calculations
         process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
-        #print(process_price_query.price)
-        pass
+        plus_price = self.db.query(Branch.studio_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()[0]
+        
+        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+
+        return self.details
+        
 
     def process_studio_bride(self):
         print('studio bride')
@@ -66,8 +71,7 @@ class DetailController:
                 else:
                     process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
                 
-        #print(process_price_query.price)
-        #print(self.schema)
+        
         plus_price = self.db.query(Branch.studio_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()[0]
         
         self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
@@ -115,40 +119,69 @@ class DetailController:
     def process_hotel(self):
         print('hotel')
         # query price from the table
-
+        process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
+        
         # for the extra guests, query price from branch as hotel extra guest
-        pass
+        plus_price = self.db.query(Branch.hotel_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()[0]
+        
+        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+
+        return self.details
+
 
     def process_outside(self):
         print('sehir disi')
         # query price from the table as outside
+        process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
 
         # for extra guests calculate the price from branch table, as outside extra guest
-        pass
+        plus_price = self.db.query(Branch.outside_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()[0]
+        
+        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+
+        return self.details
+        
 
     def process_abroad(self):
         print('yurt disi')
         # query price from the table as outside
-
+        process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
+        
         # for extra guests calculate the price from branch table, as outside extra guest
-        pass
+        plus_price = 30000
 
+        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+
+        return self.details
 
     def process_training(self):
         print('Eğitim')
-        pass
+        return self.details
 
     def process_nailart(self):
         print('Nail Art')
         # query the process price except the nail art
+        process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
 
         # calculate the nail art price according to number of fingers
+        num_nail_arts = self.details['num_nail_arts']
+        nail_art_price_query = self.db.query(ProcessPrice.price).join(Process, Process.id == ProcessPrice.process_id).filter(Process.name == "NAIL-ART").filter(ProcessPrice.employee_id == self.schema.employee_id).first()
+        print(nail_art_price_query)
+        self.details['remaining_payment'] = (num_nail_arts * nail_art_price_query[0]) + process_price_query.price
 
-        pass
+        return self.details
+    
+    def process_bridesmaid(self):
+        print("GELİN+")
+        return self.details
+        
 
     def process_hair(self):
         print('hair processing')
-        pass
+        process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
+
+        self.details['remaining_payment'] = process_price_query.price
+        return self.details
 
     def execute(self):
         method_name = self.method_mapping.get(self.process_query.name)
