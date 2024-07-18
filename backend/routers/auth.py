@@ -2,7 +2,7 @@
 from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException
 from database import SessionLocal
-from models import User, Auth
+from models import User, Auth, Employee
 
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
@@ -62,7 +62,9 @@ async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
     except JWTError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Giriş yapılamadı.')
 
-@router.post("/token", response_model=TokenSchema)
+
+
+@router.post("/token")
 async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm, Depends()], db: db_dependency):
     user = authenticate_user(form_data.username, form_data.password, db)
     
@@ -73,10 +75,46 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail='Sistem kaydınız sonlandırılmıştır.')
 
     token = create_access_token(user.username, user.id, user.auth_id, timedelta(minutes=120))
-    
+
+    data = {'access_token': token, 'token_type': 'bearer', 'auth_level': user.auth_id, 'uid': user.get('id')}
+
+
+    if user.employee_id:
+        employee_query = db.query(Employee).filter(Employee.id == user.employee_id).first()
+        if employee_query is None:
+            raise HTTPException(status_code=404, detail='Çalışan bulunamadı.')
+
+        data['department'] = employee_query.department_id
+        data['branch_id'] = employee_query.branch_id
+
     return {'access_token': token, 'token_type': 'bearer'}
 
 user_dependency = Annotated[dict, Depends(get_current_user)]
+
+@router.get('/current')
+async def get_current_session_info(db: db_dependency, user: user_dependency):
+    if user is None:
+        raise HTTPException(status_code=401, detail='Authentication Failed')
+    idx = user.get('id')
+    user_query = db.query(User).filter(User.id == idx).first()
+    
+    if user_query is None:
+        raise HTTPException(status_code=404, detail='User not found.')
+    
+
+    data = {'auth_level':user_query.auth_id, 'user_id': idx}
+
+    if user_query.employee_id:
+
+        employee_query = db.query(Employee).filter(Employee.id == user_query.employee_id).first()
+
+        if employee_query is None:
+            raise HTTPException(status_code=404, detail='User not found.')
+        
+        data['branch_id'] = employee_query.branch_id
+        data['department_id'] = employee_query.department_id
+
+    return data
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
 async def create_auth(db: db_dependency, user: user_dependency, schema: AuthCreateSchema):
