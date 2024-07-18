@@ -6,6 +6,7 @@ export interface SessionData {
     branchId?: number;
     authLevel?: number;
     isLoggedIn: boolean;
+    uid?: number;
 }
 
 export const defaultSession: SessionData = {

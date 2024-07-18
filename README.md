@@ -19,9 +19,9 @@
 ### TODOs
 * ~~Create Next Project~~
 * ~~Apply PWA~~
-* Implement Login
-* Navigation Bar (Responsive)
-* Add Footer
+* ~~Implement Login~~
+* Navigation Bar (Responsive) (Tasarım)
+* Add Footer (Tasarım)
 
 * Create Contexts (Frontend)
     - 1-> Read Request,2-> Read, 3-> Read & Write, 4-> Read & Write & Update, 5-> Read & Write & Update & Delete
@@ -36,8 +36,8 @@
 * Create API End-point for Context
     - 
 
-* Structure Pages (Optional)
-    - HEADING
-    - BODY
-    - FOOTER
+* ~~Structure Pages (Zorunlu)~~
+    - ~~HEADING~~
+    - ~~BODY~~
+    - ~~FOOTER~~
 

@@ -4,14 +4,14 @@ import { getSession } from "@/actions";
 const Navbar = async () => {
 
     const session = await getSession();
-    console.log(session)
+    
 
     return(
         <nav>
-            <Link href={'/'}>Home</Link>
-            <Link href={'/login'}>Login</Link>
-            <Link href={'/events'}>Events</Link>
-            <LogoutForm/>
+            {session.isLoggedIn && <Link href={'/'}>Home</Link>}
+            {/* {!session.isLoggedIn && <Link href={'/login'}>Login</Link>} */}
+            {session.isLoggedIn && <Link href={'/events'}>Events</Link>}
+            {session.isLoggedIn && <LogoutForm/>}
         </nav>
     );
 }
