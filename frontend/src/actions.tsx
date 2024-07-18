@@ -4,6 +4,8 @@ import { getIronSession } from "iron-session";
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { apiClient } from "./apiClient";
+
 
 export const getSession = async () => {
     //"use server";
@@ -19,9 +21,42 @@ export const login = async (
     prevState: { error: undefined | string },
     formData: FormData
 ) => {
-    //"use server";
+    
+    const session = await getSession();
 
+    const formUsername = formData.get("username") as string;
+    const formPassword = formData.get("password") as string;
 
+    //implement login
+    const data = new URLSearchParams();
+    data.append("grant_type", "");
+    data.append("username", formUsername);
+    data.append("password", formPassword);
+    data.append("scope", "");
+    data.append("client_id", "");
+    data.append("client_secret", "");
+    
+    const response = await apiClient.post('/auth/token', data, {
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+            },
+    });
+    
+    session.token = response.data.access_token
+    session.uid = response.data.uid
+    session.authLevel = response.data.auth_level
+
+    if(response.data.department){
+        session.departmentId = response.data.department
+    }
+
+    if(response.data.branch_id){
+        session.branchId = response.data.branch_id
+    }
+
+    session.isLoggedIn = true
+    await session.save();
+    redirect("/");
 }
 
 

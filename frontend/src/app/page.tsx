@@ -1,9 +1,18 @@
-import Navbar from "@/components/navbar.component";
 
-export default function Home() {
+import { getSession } from "@/actions";
+import checkLoggedIn from "@/utils";
+
+const  Home = async () =>  {
+  const session = await getSession();
+
+  await checkLoggedIn();
+  
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
-      Home Page
-    </main>
+    <>
+    Homepage
+    </>
   );
 }
+
+
+export default Home;

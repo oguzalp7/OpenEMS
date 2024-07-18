@@ -76,7 +76,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
 
     token = create_access_token(user.username, user.id, user.auth_id, timedelta(minutes=120))
 
-    data = {'access_token': token, 'token_type': 'bearer', 'auth_level': user.auth_id, 'uid': user.get('id')}
+    data = {'access_token': token, 'token_type': 'bearer', 'auth_level': user.auth_id, 'uid': user.id}
 
 
     if user.employee_id:
@@ -87,7 +87,7 @@ async def login_for_access_token(form_data: Annotated[OAuth2PasswordRequestForm,
         data['department'] = employee_query.department_id
         data['branch_id'] = employee_query.branch_id
 
-    return {'access_token': token, 'token_type': 'bearer'}
+    return data
 
 user_dependency = Annotated[dict, Depends(get_current_user)]
 
