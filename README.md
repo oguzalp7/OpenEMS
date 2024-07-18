@@ -1,8 +1,24 @@
 # OpenEMS
 
+## Instructions
+
+### Backend
+(Create Virtual Env - Optional)
+* `cd backend`
+* `pip install -r requirements.txt`
+* `uvicorn main:app --reload`
+
+### Frontend
+* `cd frontend`
+* `yarn`
+* `yarn dev`
+
+
+
+
 ### TODOs
-* Create Next Project
-* Apply PWA
+* ~~Create Next Project~~
+* ~~Apply PWA~~
 * Implement Login
 * Navigation Bar (Responsive)
 * Add Footer
