@@ -11,6 +11,7 @@ class BranchSchema(BaseNameSchema):
     department_ids: List[int]
 
 class BranchReadSchema(BaseNameSchema):
+    id: int
     is_franchise: bool
     studio_extra_guest_price: float
     hotel_extra_guest_price: float
