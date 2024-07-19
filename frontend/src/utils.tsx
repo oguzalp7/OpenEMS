@@ -29,30 +29,21 @@ export const fetchData = async (url: any) => {
     return response.data
 }
 
-// export const fecthData = async (url: string) => {
-//     const [data, setData] = useState([])
-//     const [error, setError] = useState('')
-//     const [loading, setLoading] = useState(true)
+ // Convert date string to timestamp string
+ export const convertDateToTimestamp = (dateString) => {
+  const dateObj = new Date(dateString);
+  return Math.floor(dateObj.getTime() / 1000).toString();
+};
 
-//     const session = await getSession();
-//     const requestOptions = {
-//         headers: {
-//             "Content-Type": "application/json",
-//             Authorization: `Bearer ${session.token}`,
-//         },  
-//     };
-
-//     try{
-//         const response = await apiClient.get(url, requestOptions)
-//         setData(response.data)
-//     }catch(err){
-//         if(err){
-//             console.log(err)
-//         }
-//     }finally{
-//         setLoading(false)
-//     }
-
-//     return [data, error, loading];
-
-// }
+export const reorderColumns = (data, order) => {
+    return data.map(item => {
+      let orderedItem = {};
+      order.forEach(key => {
+        // Check if the key exists in the item and is not null, undefined, or an empty string
+        if (item[key] !== null && item[key] !== undefined && item[key] !== '') {
+          orderedItem[key] = item[key];
+        }
+      });
+      return orderedItem;
+    });
+  };

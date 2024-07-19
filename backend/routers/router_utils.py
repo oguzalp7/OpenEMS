@@ -119,10 +119,10 @@ def process_details(db, process_id, details, schema):
 
 # Mapping of detail keys to their corresponding tables and columns
 makeup_event_foreign_key_mapping = {
-    'customer_id': {'table': Customer, 'column': Customer.id, 'related_columns': [Customer.country_code, Customer.phone_number, Customer.name], 'related_labels': ['ÜLKE', 'TELEFON', 'AD-SOYAD']},
-    'optional_makeup_id': {'table': Employee, 'column': Employee.id, 'related_columns': [Employee.name]},
-    'hair_stylist_id': {'table': Employee, 'column': Employee.id, 'related_columns': [Employee.name]},
-    'payment_type_id': {'table': PaymentTypes, 'column': PaymentTypes.id, 'related_columns': [PaymentTypes.name]}
+    'customer_id': {'table': Customer, 'column': Customer.id, 'related_columns': [Customer.country_code, Customer.phone_number, Customer.name], 'related_labels': ['ÜLKE KODU', 'TELEFON', 'AD-SOYAD']},
+    'optional_makeup_id': {'table': Employee, 'column': Employee.id, 'related_columns': [Employee.name], 'related_labels': ['MAKEUP2']},
+    'hair_stylist_id': {'table': Employee, 'column': Employee.id, 'related_columns': [Employee.name], 'related_labels': ['SAÇ']},
+    'payment_type_id': {'table': PaymentTypes, 'column': PaymentTypes.id, 'related_columns': [PaymentTypes.name], 'related_labels': ['ÖDEME TİPİ']}
 }
 
 def update_event_details(db: Session, event_id: int, key: str, value):
@@ -153,17 +153,46 @@ def fetch_related_data(db: Session, row: Dict, mapping: Dict) -> Dict:
         if key in mapping:
             related_columns = mapping[key]['related_columns'] 
             column = mapping[key]['column']
+            related_labels = mapping[key]['related_labels']
             query = db.query(*related_columns).filter(column == value).first()
             if query:
-                related_data[key] = dict(zip([col.key for col in related_columns], query))
-    # print(related_data)
+                
+                
+                related_data[key] = dict(zip([related_labels[i] for i ,col in enumerate(related_columns)], query))
+    
     return related_data
 
 def merge_and_flatten_dicts(base_dict, related_data):
     for key, value in related_data.items():
         if isinstance(value, dict):
             for sub_key, sub_value in value.items():
-                base_dict[f"{key}_{sub_key}"] = sub_value
+                base_dict[f"{sub_key}"] = sub_value
         else:
             base_dict[key] = value
     return base_dict
+
+def clean_dicts(dict_list):
+    cleaned_list = []
+    for item in dict_list:
+        cleaned_dict = {k: v for k, v in item.items() if not (k.endswith('_id') and isinstance(v, int))}
+        cleaned_list.append(cleaned_dict)
+    return cleaned_list
+
+def rename_keys(dict_list, name_mapping):
+    renamed_list = []
+    for item in dict_list:
+        renamed_dict = {name_mapping.get(k, k): v for k, v in item.items()}
+        renamed_list.append(renamed_dict)
+    return renamed_list
+
+
+name_mapping = {
+    'downpayment': "KAPORA",
+    'is_tst': 'TST',
+    'plus': 'ARTI+',
+    'remaining_payment': 'BAKİYE',
+    'country': 'ÜLKE',
+    'city': 'ŞEHİR',
+    'hotel': 'OTEL',
+
+}

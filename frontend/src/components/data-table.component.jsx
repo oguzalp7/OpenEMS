@@ -46,7 +46,7 @@ const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
         overflowY={'auto'}
         
     >
-    
+    {/* <Text as='h2'>{title}</Text> */}
     <Table 
     variant='striped' 
     colorScheme='blue' 
@@ -55,7 +55,7 @@ const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
     //overflowX={'auto'}
     //overflowY={'auto'}
     >
-    <TableCaption>{title}</TableCaption>
+    {title && <TableCaption>{title}</TableCaption>}
     
     <Thead>
     {obj.length > 0 && (

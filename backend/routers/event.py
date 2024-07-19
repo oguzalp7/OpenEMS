@@ -9,7 +9,7 @@ from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from .router_utils import check_privileges, process_details, convert_result_to_dict, delete_item, get_item_raw, get_items_raw, create_dynamic_model, ValidationError, convert_timestamp_to_date_gmt3, makeup_event_foreign_key_mapping, fetch_related_data, merge_and_flatten_dicts
+from .router_utils import check_privileges, process_details, name_mapping, convert_result_to_dict, rename_keys, clean_dicts, delete_item, get_item_raw, get_items_raw, create_dynamic_model, ValidationError, convert_timestamp_to_date_gmt3, makeup_event_foreign_key_mapping, fetch_related_data, merge_and_flatten_dicts
 import logging
 import json
 
@@ -120,18 +120,18 @@ def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Opti
             raise HTTPException(status_code=404, detail='Departman bulunamadı.')
         
         
-    cols = ['id', 'date', 'time', 'employee_name', 'status', 'process', 'department']
+    cols = ['id', 'SAAT', 'PERSONEL',  'İŞLEM']
     query = db.query(
             Event.id,
-            Event.date,
+            #Event.date,
             Event.time,
             Employee.name.label('employee_name'),
-            Event.status,
+            #Event.status,
             #Event.details,
             #Event.details['downpayment'],
             Process.name.label('process_name'),
             #Process.department_id,
-            Department.name.label('department_name'),
+            #Department.name.label('department_name'),
             #Branch.name.label('branch_name')
         )\
         .join(Process, Event.process_id == Process.id)\
@@ -163,17 +163,18 @@ def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Opti
     results = query.offset(skip).limit(limit).all()
     results = [convert_result_to_dict(row, cols) for row in results]
 
-    # print(results)
-    
-
     if dep is not None:
         processed_results = []
         for row in results:
             related_data = fetch_related_data(db, row, makeup_event_foreign_key_mapping)
             processed_results.append(merge_and_flatten_dicts(row, related_data))
-        #print(processed_results)
+            #print(row)
+        processed_results = clean_dicts(processed_results)
+        processed_results = rename_keys(processed_results, name_mapping=name_mapping)
+        
         return processed_results
         
+    results = clean_dicts(results)
     return results
 
 

@@ -27,7 +27,13 @@ const Settings = () => {
       <p>CHANGE PASSWORD</p>
     </TabPanel>
     <TabPanel>
-      <p>COMING SOON</p>
+      <h2>ŞUBE</h2>
+      <table>
+
+      </table>
+      <p>DEPARTMAN</p>
+
+
     </TabPanel>
   </TabPanels>
 </Tabs>

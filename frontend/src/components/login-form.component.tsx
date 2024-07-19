@@ -36,25 +36,26 @@ const LoginForm = () => {
                   borderRadius='full'
                   boxSize={['100px', '150px', '200px', '250px']}
               />
-              <Text>Kullanıcı Adı ve Şifrenizi Giriniz.</Text>
-            </VStack>
-            <form action={formAction}>
+              {/* <Text>Kullanıcı Adı ve Şifrenizi Giriniz.</Text> */}
+              
+              <form action={formAction}>
               <FormControl>
                       <FormLabel>Kullanıcı Adı:</FormLabel>
                       <Input rounded='none' variant='filled' type="text" name="username" required placeholder="Kullanıcı Adı"/>
               </FormControl>
-
+              <br/>
               <FormControl>
                       <FormLabel>Şifre:</FormLabel>
                       <Input rounded='none' variant='filled' type="password" name="password" required placeholder="Şifre"/>
               </FormControl>
-
+              <br/>
               <Button type="submit" colorScheme="blue" w='full'>Giriş Yap</Button>
               {state?.error && <p>{state.error}</p>}
 
             </form>
-            
 
+            </VStack>
+            
           </VStack>
         </Box>
   );
