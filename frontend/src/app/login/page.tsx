@@ -6,7 +6,9 @@ import checkLoggedIn from "@/utils"
 const LoginPage = async () => {  
   const session = await getSession()
     
-  await checkLoggedIn();
+  if(session.isLoggedIn){
+    redirect("/")
+  }
   
   return (
     <div className="login">
