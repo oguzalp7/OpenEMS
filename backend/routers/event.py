@@ -13,7 +13,7 @@ from .router_utils import check_privileges, process_details, convert_result_to_d
 import logging
 import json
 
-from models import Event, Process, Department, Employee
+from models import Event, Process, Department, Employee, Branch
 
 from schemas.event import EventSchema, EventCreateSchema
 
@@ -102,10 +102,11 @@ def get_events_raw(db: db_dependency, user: user_dependency, skip: int = 0, limi
     return get_items_raw(db=db, table=Event, skip=skip, limit=limit)
 
 @router.get('/', status_code=status.HTTP_200_OK)
-def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Optional[str] = Query(None), dep: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
+def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Optional[str] = Query(None), dep: Optional[int] = Query(None), b: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
     """
         params: 
         t => timestamp: str
+        b => branch_id: int
         dep => department id: int
         skip => starting from
         limit => amount of rows in an API call.
@@ -130,12 +131,17 @@ def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Opti
             #Event.details['downpayment'],
             Process.name.label('process_name'),
             #Process.department_id,
-            Department.name.label('department_name')
+            Department.name.label('department_name'),
+            #Branch.name.label('branch_name')
         )\
         .join(Process, Event.process_id == Process.id)\
         .join(Department, Process.department_id == Department.id)\
-        .join(Employee, Employee.id == Event.employee_id)
-    
+        .join(Employee, Employee.id == Event.employee_id)\
+        .join(Branch, Event.branch_id == Branch.id)
+
+    if b is not None:
+        query = query.filter(Branch.id == b)
+        
     if dep is not None:
         query = query.filter(Department.id == dep)
         keys_query = db.query(Process.attributes).filter(dep == Process.department_id).first()
@@ -152,8 +158,7 @@ def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Opti
         # convert from timestamp to datetime.date
         date_ = convert_timestamp_to_date_gmt3(t)
         query = query.filter(Event.date == date_)
-    
-    
+
 
     results = query.offset(skip).limit(limit).all()
     results = [convert_result_to_dict(row, cols) for row in results]

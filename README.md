@@ -20,8 +20,8 @@
 * ~~Create Next Project~~
 * ~~Apply PWA~~
 * ~~Implement Login~~
-* Navigation Bar (Responsive) (Tasarım)
-* Add Footer (Tasarım)
+* ~~Navigation Bar (Responsive) (Tasarım)~~
+* ~~Add Footer (Tasarım)~~
 
 * Create Contexts (Frontend)
     - 1-> Read Request,2-> Read, 3-> Read & Write, 4-> Read & Write & Update, 5-> Read & Write & Update & Delete
@@ -33,8 +33,7 @@
         - Else
             - Allow to see emploee's department and branch only.
 
-* Create API End-point for Context
-    - 
+
 
 * ~~Structure Pages (Zorunlu)~~
     - ~~HEADING~~

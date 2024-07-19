@@ -1,8 +1,14 @@
+"use client"
+
 import React from 'react'
+import { Text } from '@chakra-ui/react'
 
 const Footer = () => {
   return (
-    <div>Awesome Footer</div>
+    <Text fontSize="sm" color="white">
+          &copy; {new Date().getFullYear()} <a href='https://lavittoria.ai'>La Vittoria AI</a>. All rights reserved.
+        </Text>
+
   )
 }
 
