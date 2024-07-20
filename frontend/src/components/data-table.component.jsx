@@ -5,6 +5,7 @@ import React from 'react'
 import {
     Table,
     Thead,
+    Text,
     Tbody,
     Tfoot,
     Tr,
@@ -13,6 +14,7 @@ import {
     TableCaption,
     TableContainer,
     Button,
+    Box,
     background,
   } from '@chakra-ui/react'
 
@@ -46,7 +48,13 @@ const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
         overflowY={'auto'}
         
     >
-    {/* <Text as='h2'>{title}</Text> */}
+    <Box textAlign="center" mb={4}>
+      {title && (
+        <Text as='h3' fontSize="medium">
+          {title}
+        </Text>
+      )}
+    </Box>
     <Table 
     variant='striped' 
     colorScheme='blue' 
@@ -55,7 +63,6 @@ const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
     //overflowX={'auto'}
     //overflowY={'auto'}
     >
-    {title && <TableCaption>{title}</TableCaption>}
     
     <Thead>
     {obj.length > 0 && (

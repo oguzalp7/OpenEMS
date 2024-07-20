@@ -183,7 +183,7 @@ const Events = () => {
         // console.log(response.data)
         // setData(response.data);
       } catch (error) {
-        console.error('Error fetching departments:', error);
+        console.error('Error fetching events:', error);
       }
     }
 

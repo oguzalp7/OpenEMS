@@ -121,14 +121,10 @@ def get_processed_process_prices(user: user_dependency, db: db_dependency, e: Op
 
     if e is not None:
         query = query.filter(Employee.id == e)
-        if query.count() == 0 :
-                raise HTTPException(status_code=404, detail="Çalışanın İşlem Ücreti Bulunamadı.")
-
+        
     if pid is not None:
         query = query.filter(Process.id == pid)
-        if query.count() == 0 :
-                raise HTTPException(status_code=404, detail="İşlemin İşlem Ücreti Bulunamadı.")
-    
+        
     query = query.offset(skip).limit(limit).all()    
     return [convert_result_to_dict(row, process_price_api_columns) for row in query]
 

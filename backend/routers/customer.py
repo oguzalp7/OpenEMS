@@ -15,7 +15,7 @@ import logging
 
 from schemas.customer import CustomerSchema, CustomerCreateSchema
 
-router = APIRouter(prefix='/customers', tags=['Customers'])
+router = APIRouter(prefix='/customer', tags=['Customers'])
 
 def get_db():
     db = SessionLocal()
@@ -78,24 +78,18 @@ def get_processed_customers(user: user_dependency, db: db_dependency, p: Optiona
         Customer.name,
         Customer.country_code,
         Customer.phone_number,
-        Customer.black_listed
+        #Customer.black_listed
     )
     
     if p is not None:
         query = query.filter(Customer.phone_number == p)
-        if query.count() == 0 :
-            raise HTTPException(status_code=404, detail="İstenen Telefon Numarasına Sahip Müşteri Bulunamadı.")
         
     if n is not None:
         query = query.filter(func.lower(func.replace(Customer.name, " ", "")).contains(n))
-        if query.count() == 0 :
-            raise HTTPException(status_code=404, detail="Müşteri Bulunamadı.")
         
     if bl is not None:
         query = query.filter(Customer.black_listed == bl)
-        if query.count() == 0 :
-            raise HTTPException(status_code=404, detail="İstenen Kara Liste Durumunda Müşteri Bulunamadı.") 
-      
+        
     query = query.offset(skip).limit(limit).all()         
     return [convert_result_to_dict(row, process_api_columns) for row in query]
 
