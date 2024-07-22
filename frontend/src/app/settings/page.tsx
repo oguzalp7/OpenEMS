@@ -1,7 +1,7 @@
 import React from 'react'
 
 import { Tabs, TabList, TabPanels, Tab, TabPanel } from '@chakra-ui/react'
-
+import ChakraDataTable from '@/components/data-table.component'
 const Settings = () => {
   return (
     <Tabs>

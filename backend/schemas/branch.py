@@ -18,3 +18,10 @@ class BranchReadSchema(BaseNameSchema):
     outside_extra_guest_price: float
 
     departments: List[DepartmentSchema]
+
+class BranchFetchSchema(BaseNameSchema):
+    id: int
+    is_franchise: bool
+    studio_extra_guest_price: float
+    hotel_extra_guest_price: float
+    outside_extra_guest_price: float
