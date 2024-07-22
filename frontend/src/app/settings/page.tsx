@@ -52,6 +52,7 @@ const Settings = () => {
 
     fetchBranches();
   }, []);
+  
   return (
     <Tabs>
   <TabList>
