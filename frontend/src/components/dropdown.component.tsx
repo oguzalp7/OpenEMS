@@ -1,22 +1,28 @@
 "use client"
 
 import { Box, Select } from '@chakra-ui/react'
-import React from 'react'
+import React, { useEffect } from 'react'
 
-const ChakraDropdown = ({options, label, initialValue, onSelect}) => {
+const ChakraDropdown = ({options, label, initialValue, value, onSelect}) => {
 
-    const handleChange = (e) => {
-        const selectedId = e.target.value;
-        //console.log(selectedId)
-        onSelect(selectedId);
-    }
+  const [selectedValue, setSelectedValue] = React.useState(value || initialValue);
+
+  useEffect(() => {
+      setSelectedValue(value || initialValue);
+  }, [value, initialValue]);
+
+  const handleChange = (e) => {
+      const selectedId = e.target.value;
+      //console.log(selectedId)
+      onSelect(selectedId);
+  }
 
   return (
     <Box>
-        <Select onChange={handleChange}>
+        <Select value={selectedValue} onChange={handleChange}>
         <option value={initialValue} label={`${label}`}>{`${label}`}</option>
         {options.map((option: { id: React.Key | null | undefined }) => (
-            <option key={option.id} value={option.id} label={option.name} >{option.name}</option>
+            <option key={option.id} value={option.id || option.ID} label={option["AD-SOYAD"] || option.name} >{option["AD-SOYAD"]  || option.name}</option>
         ))}
         </Select>
     </Box>

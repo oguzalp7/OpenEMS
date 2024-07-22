@@ -33,26 +33,56 @@ logger = logging.getLogger(__name__)
 @router.post("/", status_code=status.HTTP_201_CREATED) #, response_model=EventCreateSchema)
 async def create_event(user: user_dependency, db: db_dependency, schema: EventCreateSchema):
     """
-    example: {
-        "date": "2024-07-05",
-        "time": "09:24",
-        "process_id": 1,
-        "branch_id": 1,
-        "employee_id": 1,
-        "description": "test hello world",
-        "status": "scheduled",
-        "details": {
-                    "optional_makeup_id": 1,
-                    "hair_stylist_id": 2,
-                    "is_complete": false,
-                    "is_tst" : false,
-                    "downpayment": 100,
-                    "plus": 0,
-                    "payment_type_id": 1,
-                    "remaining_payment": 500,
-                    "customer_id": 1
-                }
-    }
+    examples: {
+        "makeup": {
+            "date": "2024-07-05",
+            "time": "09:24",
+            "process_id": 1,
+            "branch_id": 1,
+            "employee_id": 1,
+            "description": "test hello world",
+            "status": "scheduled",
+            "details": {
+                        "optional_makeup_id": 1,
+                        "hair_stylist_id": 2,
+                        "is_complete": false,
+                        "is_tst" : false,
+                        "downpayment": 100,
+                        "plus": 0,
+                        "payment_type_id": 1,
+                        "remaining_payment": 500,
+                        "customer_id": 1
+            }
+        },
+        "nailart": {
+            "date": "2024-07-05",
+            "time": "09:24",
+            "process_id": 10,
+            "branch_id": 3,
+            "employee_id": 3,
+            "description": "test hello world",
+            "status": "scheduled",
+            "details": {
+                        "num_nail_arts": 5,
+                        "remaining_payment": 0,
+                        "customer_id": 1
+            }
+        },
+        "hair": {
+            "date": "2024-07-21",
+            "time": "09:30",
+            "process_id": 9,
+            "branch_id": 1,
+            "employee_id": 2,
+            "description": "test hello world",
+            "status": "scheduled",
+            "details": {
+                        "is_tst": false,
+                        "remaining_payment": 0,
+                        "customer_id": 1
+            }
+        },
+    }  
     
     """
 
@@ -102,11 +132,12 @@ def get_events_raw(db: db_dependency, user: user_dependency, skip: int = 0, limi
     return get_items_raw(db=db, table=Event, skip=skip, limit=limit)
 
 @router.get('/', status_code=status.HTTP_200_OK)
-def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Optional[str] = Query(None), dep: Optional[int] = Query(None), b: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
+def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Optional[str] = Query(None), dep: Optional[int] = Query(None), b: Optional[int] = Query(None), eid: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
     """
         params: 
         t => timestamp: str
         b => branch_id: int
+        eid => employee_id: int
         dep => department id: int
         skip => starting from
         limit => amount of rows in an API call.
@@ -146,18 +177,24 @@ def get_events_with_attributes(db: db_dependency, user: user_dependency, t: Opti
         query = query.filter(Department.id == dep)
         keys_query = db.query(Process.attributes).filter(dep == Process.department_id).first()
         
-        detail_keys = list(keys_query[0].keys())
-        
-        cols.extend(detail_keys)
-        
-        for key in detail_keys:
-            query = query.add_columns(func.json_extract(Event.details, f'$.{key}').label(key))
+        if keys_query is not None:
+
+            detail_keys = list(keys_query[0].keys())
+            
+            cols.extend(detail_keys)
+            
+            for key in detail_keys:
+                query = query.add_columns(func.json_extract(Event.details, f'$.{key}').label(key))
         
        
     if t is not None:
         # convert from timestamp to datetime.date
         date_ = convert_timestamp_to_date_gmt3(t)
         query = query.filter(Event.date == date_)
+
+
+    if eid is not None:
+        query = query.filter(Employee.id == eid)
 
 
     results = query.offset(skip).limit(limit).all()

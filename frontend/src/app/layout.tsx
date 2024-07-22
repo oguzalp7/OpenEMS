@@ -2,10 +2,7 @@
 import type { Metadata, Viewport } from "next";
 
 import { Providers } from "./providers";
-import Navbar from "@/components/navbar.component";
-import Footer from "@/components/footer.component";
 
-import { VStack, HStack, Box } from "@chakra-ui/react";
 
 
 import Home from "./page";
@@ -29,9 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <body>
       <Providers>
-        <Home>
-          {children}
-        </Home>
+        {children}
       </Providers>
       </body>
     </html>

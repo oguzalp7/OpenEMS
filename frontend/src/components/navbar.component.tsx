@@ -13,7 +13,7 @@ const Navbar =  () => {
         <Flex w={['200px', 'xs', 'lg', 'lg']} ml={[0, 0, 10, 20]}>
             <Flex  align='center'>
                 <Flex display={['flex', 'flex', 'flex', 'flex']}>
-                    <Link href={'/insert-event'}>
+                    <Link href={'/create-event'}>
                         <Image src="https://muberyasaglam.com.tr/minimages/ekleme.png"/>
                     </Link>
 

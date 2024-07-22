@@ -20,11 +20,39 @@ import {
 
   import { Checkbox} from '@chakra-ui/react'
   import {EditIcon} from '@chakra-ui/icons'
+
+  /*
+  const customButtons = [
+        {
+            label: 'Güncelle',
+            color: 'gray',
+            onClick: handleUpdate,
+            isDisabled: disableUpdateButton
+        },
+        {
+            label: 'Sil',
+            color: 'red',
+            onClick: handleDelete,
+            isDisabled: disableDeleteButton
+        },
+        {
+            label: 'Yenile',
+            color: 'green',
+            onClick: refreshPage
+        }
+    ];
+  
+  */
   
   
 
 const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
+    /*
+    title => string,
+    obj => list of hashmaps
+    showButtons => boolean,
 
+    */
     const hasCustomButtons = customButtons.length > 0;
     const handleRowClick = (obj_, event) => {
       
