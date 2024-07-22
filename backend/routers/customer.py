@@ -8,7 +8,7 @@ from models import Customer, Department
 from sqlalchemy import cast, JSON, func
 from database import SessionLocal
 from starlette import status
-
+from urllib.parse import unquote
 from .auth import get_current_user
 from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, convert_result_to_dict
 import logging
@@ -62,9 +62,10 @@ async def get_raw_customer(user: user_dependency, db: db_dependency, customer_id
     return get_item_raw(db=db, table=Customer, index=customer_id)
 
 @router.get('/', status_code=status.HTTP_200_OK)
-def get_processed_customers(user: user_dependency, db: db_dependency, p: Optional[str] = Query(None), n: Optional[str] = Query(None), bl: Optional[bool] = Query(False), skip: int = 0, limit: int = 10):
+def get_processed_customers(user: user_dependency, db: db_dependency, cc: Optional[str] = Query(None), p: Optional[str] = Query(None), n: Optional[str] = Query(None), bl: Optional[bool] = Query(False), skip: int = 0, limit: int = 10):
     """
         params: 
+        c => country code: str
         p => phone number: str
         n => name: str
         bl => black listed: bool
@@ -80,18 +81,30 @@ def get_processed_customers(user: user_dependency, db: db_dependency, p: Optiona
         Customer.phone_number,
         #Customer.black_listed
     )
-    
-    if p is not None:
-        query = query.filter(Customer.phone_number == p)
+
+    if cc is not None: 
+        cc = cc.replace(" ", "")
+        cc = "+" + cc
+        query = query.filter(Customer.country_code == cc)
         
+    if p is not None:
+        cleaned_substring = p.replace(" ", "")
+        query = query.filter(Customer.phone_number.startswith(cleaned_substring))
+
     if n is not None:
         query = query.filter(func.lower(func.replace(Customer.name, " ", "")).contains(n))
-        
+    
     if bl is not None:
         query = query.filter(Customer.black_listed == bl)
         
     query = query.offset(skip).limit(limit).all()         
     return [convert_result_to_dict(row, process_api_columns) for row in query]
+
+@router.get('/countryCodes/')
+def get_country_codes(user: user_dependency, db: db_dependency):
+    check_privileges(user, 1)
+    distinct_country_codes = db.query(Customer.country_code).distinct().all()
+    return [code[0] for code in distinct_country_codes]
 
 @router.put("/{customer_id}", response_model=CustomerCreateSchema, status_code=status.HTTP_201_CREATED)
 def update_customer(customer_id: int, schema: CustomerCreateSchema, db: db_dependency, user: user_dependency):

@@ -5,10 +5,14 @@ import { getSession } from '@/actions';
 import { apiClient } from '@/apiClient';
 import ChakraDataTable from '@/components/data-table.component';
 import Loading from '@/components/loading.component';
-import { Checkbox, HStack, Input, InputGroup, InputLeftAddon, VStack } from '@chakra-ui/react';
+import { validateAndCombineContact } from '@/utils';
+import { Button, Checkbox, Input, InputGroup, InputLeftAddon, Select, Stack, VStack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react'
 
 const Customers = () => {
+  const [countryCodes, setCountryCodes] = useState([]);
+  const [selectedCountryCode, setSelectedCountryCode] = useState('')
+
   const [phoneNumber, setPhoneNumber] = useState('');
 
   const [name, setName] = useState(''); 
@@ -24,6 +28,10 @@ const Customers = () => {
     let newUrl = '/customer/';
     const params = [];
     
+    if (selectedCountryCode) {
+      params.push(`cc=${selectedCountryCode}`);
+    }
+
     if (phoneNumber) {
       params.push(`p=${phoneNumber}`);
     }
@@ -41,7 +49,13 @@ const Customers = () => {
     }
     setURL(newUrl);
 
-  }, [phoneNumber, name, blacklisted]);
+  }, [selectedCountryCode, phoneNumber, name, blacklisted]);
+
+  const handleCountryCodeSelect = (selectedValue) => {
+    
+    setSelectedCountryCode(selectedValue);
+    
+  };
 
   const handleSelectPhoneNumber = (selectedPhoneNumber) => {
     setPhoneNumber(selectedPhoneNumber.target.value);
@@ -68,7 +82,9 @@ const Customers = () => {
 
       try {
         const response = await apiClient.get(url, requestOptions);
-        setData(response.data);
+        let processedData = response.data;
+        processedData = validateAndCombineContact(processedData, 'TELEFON NUMARASI', 'ÜLKE KODU');
+        setData(processedData);
       } catch (error) {
         console.error('Error fetching customers:', error);
       }
@@ -76,14 +92,61 @@ const Customers = () => {
 
     fetchCustomers();
   }, [url]);
-  console.log(data)
-  console.log(phoneNumber)
+  
+  useEffect(() => {
+    const fetchCountryCodes = async () => {
+      const session = await getSession();
+    
+      const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+      };
+
+      try {
+        const response = await apiClient.get('/customer/countryCodes/', requestOptions);
+        setCountryCodes(response.data);
+        
+      } catch (error) {
+        console.error('Error fetching country codes:', error);
+      }
+    };
+
+    fetchCountryCodes();
+  }, []);
+
+
+  const resetFilters = () => {
+    setSelectedCountryCode("")
+    setName("")
+    setPhoneNumber("")
+    setBlacklisted(false)
+  }
+ 
   return (
     <VStack>
-      <HStack>
+      <Stack flexDir={['column', 'column', 'row', 'row']}>
       <InputGroup>
-      <InputLeftAddon>+90</InputLeftAddon>
+      <InputLeftAddon>
+        {countryCodes ? (
+          <Select 
+          placeholder="ÜLKE KODU" 
+          value={selectedCountryCode} 
+          onChange={(e) => handleCountryCodeSelect(e.target.value)}
+          >
+           {countryCodes.map((code) => (
+        <option key={code} value={code}>
+          {code}
+        </option>
+          ))}
+        </Select>
+          ):( 
+          <Loading/>
+          )}
+      </InputLeftAddon>
       <Input 
+          value={phoneNumber}
           type='tel'
           onChange={handleSelectPhoneNumber} 
           placeholder='Telefon Numarası' />
@@ -93,8 +156,9 @@ const Customers = () => {
           onChange={handleSelectName}
           placeholder='Müşteri Adı'
         />
-      <Checkbox onChange={handleSelectBlacklisted}>Kara Liste</Checkbox>
-      </HStack>
+      <Checkbox isChecked={blacklisted} onChange={handleSelectBlacklisted}>Kara Liste</Checkbox>
+      <Button background={'transparent'} onClick={resetFilters}>RESET</Button>
+      </Stack>
       {data ? (
         <ChakraDataTable  obj={data} title={'MÜŞTERİLER'} showButtons={false}/>
       ):(
