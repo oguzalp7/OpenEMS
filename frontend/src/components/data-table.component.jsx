@@ -19,7 +19,7 @@ import {
   } from '@chakra-ui/react'
 
   import { Checkbox} from '@chakra-ui/react'
-  import {EditIcon} from '@chakra-ui/icons'
+  import {EditIcon, DeleteIcon} from '@chakra-ui/icons'
 
   /*
   const customButtons = [
@@ -58,12 +58,13 @@ const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
       
         if(!event.target.className.includes('button') && hasCustomButtons){
             customButtons.forEach((button) => {
-            if(button.label === 'Güncelle' && !button.isDisabled){
-              button.onClick(obj_);
-            }
-          })
+                if(button.label === 'Güncelle' && !button.isDisabled){
+                    button.onClick(obj_);
+                }
+            });
         }
-      }
+    }
+
   return (
     <TableContainer 
         w={['md', 'lg', 'xl', 'full']}
@@ -122,10 +123,19 @@ const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
             ))} */}
             {customButtons.map((button, btnIndex) => {
                 if(button.label == 'Güncelle'){
-                return (<Button key={btnIndex} colorScheme={button.color} isDisabled={button.isDisabled} onClick={() => button.onClick(obj_)}>
-                <EditIcon/>
-                </Button>)
-                }else{
+                return (
+                        <Button key={btnIndex} colorScheme={button.color} isDisabled={button.isDisabled} onClick={() => button.onClick(obj_)}>
+                            <EditIcon/>
+                        </Button>
+                    )
+                }else if(button.label == "Sil"){
+                    return (
+                        <Button key={btnIndex}  colorScheme={button.color} isDisabled={button.isDisabled} onClick={() => button.onClick(obj_)}>
+                            <DeleteIcon/>
+                        </Button>
+                    )
+                }
+                else{
                 return (<Button key={btnIndex} colorScheme={button.color} isDisabled={button.isDisabled} onClick={() => button.onClick(obj_)}>
                 {button.label}
                 </Button>)

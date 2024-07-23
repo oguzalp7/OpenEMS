@@ -4,69 +4,19 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import {
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
-  useDisclosure,
-  Button,
-  VStack,
-  HStack,
   InputGroup,
   Stack,
   InputLeftAddon,
   Input,
-  InputRightAddon
+  InputRightAddon,
+  Button
 } from '@chakra-ui/react'
 
 import ChakraDropdown from "@/components/dropdown.component";
 
-const ChakraModal = (
-  {
-  children,
-  }: {
-  children: React.ReactNode;
-  }
-  ) => {
-  const { isOpen, onOpen, onClose } = useDisclosure()
+import ChakraModal from "@/components/modal.component";
 
-  useEffect(() => {
-    onOpen();
-  }, []);
 
-  return (
-    <>
-      {/* <Button onClick={onOpen}>Open Modal</Button> */}
-
-      <Modal isOpen={isOpen} onClose={onClose}>
-        <ModalOverlay />
-        <ModalContent>
-          {/* <ModalHeader>Modal Title</ModalHeader> */}
-          <ModalCloseButton />
-          <ModalBody>
-            {children}
-          </ModalBody>
-
-          <ModalFooter>
- 
-              <Button colorScheme='blue' onClick={onClose}>
-                KAYDET
-              </Button>
-                
-              <Button colorScheme='red' onClick={onClose}>
-                VAZGEÇ
-              </Button>
-     
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
-    </>
-  )
-
-}
 
 const CustomInput = () => {
 
@@ -121,9 +71,25 @@ const  Home = ({
     //router.push('/events')
   }, [session])
 
+
+  // temporary add
+  const handleSave = () => {
+    console.log("Save clicked");
+  };
+
+  const handleAnotherAction = () => {
+    console.log("Another action clicked");
+  };
+
+  const buttons = [
+    { colorScheme: "blue", onClick: handleSave, text: "KAYDET" },
+    { colorScheme: "green", onClick: handleAnotherAction, text: "ANOTHER ACTION" },
+  ];
+
+
   return (
     <>
-    <ChakraModal>
+    <ChakraModal buttons={buttons}>
         <CustomInput/>
     </ChakraModal>
     </>
