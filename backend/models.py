@@ -155,9 +155,6 @@ class Customer(TimeStampedModel):
     events = Column(JSON, nullable=True)
 
 
-
-
-
 # # ----------------------------------------------------------------------------------------------
 
 class EventStatus(enum.Enum):

@@ -12,6 +12,10 @@ backend/__pycache__/
 backend/schemas/__pycache__/
 backend/schemas/__pycache__
 
+<<<<<<< HEAD
 backend/schemas/__pycache__/customer.cpython-312.pyc
 
 frontend_depreciated
+=======
+frontend_depreciated
+>>>>>>> origin/gulberadev

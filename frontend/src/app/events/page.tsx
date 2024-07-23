@@ -321,8 +321,10 @@ const Events = () => {
         setData(processedData);
         
       } catch (error) {
+
         console.error('Error fetching departments:', error);
         setData([]);
+
       }
     }
 
