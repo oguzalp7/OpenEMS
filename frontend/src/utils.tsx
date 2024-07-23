@@ -90,3 +90,31 @@ export const formatTime = (time) => {
     const [hours, minutes] = time.split(':');
     return `${hours}:${minutes}`;
 };
+
+
+export const removeKeysFromObject = (obj: Record<string, any>, keysToRemove: string[]) => {
+    const newObj = { ...obj };
+    keysToRemove.forEach((key) => {
+      delete newObj[key];
+    });
+    return newObj;
+};
+  
+export const removeKeysFromArrayOfObjects = (array: Record<string, any>[], keysToRemove: string[]) => {
+    return array.map((obj) => removeKeysFromObject(obj, keysToRemove));
+};
+
+
+export const hideKeysInObject = (obj: Record<string, any>, keysToHide: string[]) => {
+    const newObj = { ...obj };
+    keysToHide.forEach((key) => {
+      if (newObj.hasOwnProperty(key)) {
+        newObj[key] = null;
+      }
+    });
+    return newObj;
+};
+  
+export const hideKeysInArrayOfObjects = (array: Record<string, any>[], keysToHide: string[]) => {
+    return array.map((obj) => hideKeysInObject(obj, keysToHide));
+};
