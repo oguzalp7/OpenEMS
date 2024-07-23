@@ -130,8 +130,8 @@ const Customers = () => {
       <InputGroup>
       <InputLeftAddon>
         {countryCodes ? (
-          <Select 
-          placeholder="ÜLKE KODU" 
+          <Select borderColor={"transparent"}
+          placeholder=" " 
           value={selectedCountryCode} 
           onChange={(e) => handleCountryCodeSelect(e.target.value)}
           >
