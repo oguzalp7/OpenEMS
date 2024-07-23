@@ -1,5 +1,5 @@
 # routers/customer.py
-
+from turkish_string import upper_tr
 from fastapi import APIRouter, Depends, HTTPException, Path,Query
 from sqlalchemy.orm import Session
 from typing import Annotated, List, Dict, Any,Optional
@@ -92,7 +92,9 @@ def get_processed_customers(user: user_dependency, db: db_dependency, cc: Option
         query = query.filter(Customer.phone_number.startswith(cleaned_substring))
 
     if n is not None:
-        query = query.filter(func.lower(func.replace(Customer.name, " ", "")).contains(n))
+        n = n.replace(" ", "")
+        n_upper = upper_tr(n)
+        query = query.filter(func.lower(func.replace(Customer.name, " ", "")).contains(n_upper))
     
     if bl is not None:
         query = query.filter(Customer.black_listed == bl)

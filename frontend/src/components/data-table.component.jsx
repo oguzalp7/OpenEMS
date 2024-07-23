@@ -55,15 +55,18 @@ const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
     */
     const hasCustomButtons = customButtons.length > 0;
     const handleRowClick = (obj_, event) => {
-      
-        if(!event.target.className.includes('button') && hasCustomButtons){
+        // Convert className to a string to ensure includes method works
+        const className = event.target.className.toString();
+        
+        if (!className.includes('button') && hasCustomButtons) {
             customButtons.forEach((button) => {
-                if(button.label === 'Güncelle' && !button.isDisabled){
+                if (button.label === 'Güncelle' && !button.isDisabled) {
                     button.onClick(obj_);
                 }
             });
         }
-    }
+    };
+    
 
   return (
     <TableContainer 
