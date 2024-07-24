@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSession } from "./actions";
 import { apiClient } from "./apiClient";
-import { useState, useEffect } from "react";
+
 
 const checkLoggedIn = async () => {
     const session = await getSession();
@@ -117,4 +117,70 @@ export const hideKeysInObject = (obj: Record<string, any>, keysToHide: string[])
   
 export const hideKeysInArrayOfObjects = (array: Record<string, any>[], keysToHide: string[]) => {
     return array.map((obj) => hideKeysInObject(obj, keysToHide));
+};
+
+
+export const generateFormConfig = (schema) => {
+  return Object.keys(schema.properties).map((key) => {
+    const field = schema.properties[key];
+    let type;
+
+    switch (field.type) {
+      case 'string':
+        type = field.format === 'date' ? 'date' : 'text';
+        break;
+      case 'integer':
+        type = 'select'; // Assuming integers are foreign keys
+        break;
+      case 'boolean':
+        type = 'checkbox';
+        break;
+      case 'number':
+        type = 'number';
+        break;
+      default:
+        type = 'text';
+    }
+
+    return {
+      type,
+      name: key,
+      label: field.title || key,
+      options: []
+    };
+  });
+};
+
+export const alterFormConfigType = (formConfig, keys, targetType) => {
+  /*
+   * Function to alter the type of formConfig objects based on their name attribute.
+   * @param {Array} formConfig - The form configuration array.
+   * @param {Array} keys - The list of keys (names) to be altered.
+   * @param {String} targetType - The target type to be set.
+   * @returns {Array} - The updated form configuration array.
+  */
+  return formConfig.map((field) => {
+    if (keys.includes(field.name)) {
+      return { ...field, type: targetType };
+    }
+    return field;
+  });
+};
+
+
+export const findFieldIndex = (formConfig, type, name) => {
+  return formConfig.findIndex(field => field.type === type && field.name === name);
+};
+
+
+export const renameFormLabels = (formConfig, labelMapping) => {
+  return formConfig.map((field) => {
+    if (labelMapping[field.label]) {
+      return {
+        ...field,
+        label: labelMapping[field.label],
+      };
+    }
+    return field;
+  });
 };

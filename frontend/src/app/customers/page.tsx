@@ -5,6 +5,7 @@ import { getSession } from '@/actions';
 import { apiClient } from '@/apiClient';
 import ChakraDataTable from '@/components/data-table.component';
 import Loading from '@/components/loading.component';
+import TextInput from '@/components/text-input.component';
 import { validateAndCombineContact } from '@/utils';
 import { Button, Checkbox, Input, InputGroup, InputLeftAddon, Select, Stack, VStack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react'
@@ -150,6 +151,7 @@ const Customers = () => {
           type='tel'
           onChange={handleSelectPhoneNumber} 
           placeholder='Telefon Numarası' />
+      {/* <TextInput name={'phoneNumber'} type={'text'} label={'phoneNumber'}/> */}
       </InputGroup>
       <Input
           value={name}

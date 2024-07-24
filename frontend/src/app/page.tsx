@@ -15,8 +15,9 @@ import {
 import ChakraDropdown from "@/components/dropdown.component";
 
 import ChakraModal from "@/components/modal.component";
+import DynamicForm from "@/components/dynamic-form.component";
 
-
+import * as yup from 'yup';
 
 const CustomInput = () => {
 
@@ -49,13 +50,27 @@ const CustomInput = () => {
 }
 
 
-const  Home = ({
-    children,
-  }: {
-    children: React.ReactNode;
-  }) =>  {
+const  Home = () =>  {
   const router = useRouter()
   const [session, setSession] = useState({})
+
+  const [formConfig, setFormConfig] = useState([]);
+
+  const schema = yup.object().shape({
+    name: yup.string().required('Name is required'),
+    email: yup.string().email('Invalid email').required('Email is required'),
+    password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+  });
+
+  useEffect(() => {
+    setFormConfig([
+      { type: 'text', name: 'name', label: 'Name' },
+      { type: 'email', name: 'email', label: 'Email' },
+      { type: 'date', name: 'date', label: 'Date' },
+      { type: 'select', name: 'department', label: 'Department', options: [{ id: 1, name: 'HR' }, { id: 2, name: 'Engineering' }] },
+      // Add more fields based on rowData if needed
+    ]);
+  },[])
   
   useEffect(() => {
     const getSessionInfo = async () => {
@@ -86,12 +101,18 @@ const  Home = ({
     { colorScheme: "green", onClick: handleAnotherAction, text: "ANOTHER ACTION" },
   ];
 
+  const handleFormSubmit = (formData) => {
+    console.log(formData);
+    // Perform your API call here
+  };
+
 
   return (
     <>
-    <ChakraModal buttons={buttons}>
+    {/* <ChakraModal buttons={buttons}>
         <CustomInput/>
-    </ChakraModal>
+    </ChakraModal> */}
+    <DynamicForm schema={schema} formConfig={formConfig} onSubmit={handleFormSubmit} />
     </>
   );
 }

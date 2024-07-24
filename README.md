@@ -40,3 +40,9 @@
     - ~~BODY~~
     - ~~FOOTER~~
 
+* Implement forms for:
+    - branch (ignore departments)
+    - departments
+    - employment_type
+    - payment_type
+    - process
