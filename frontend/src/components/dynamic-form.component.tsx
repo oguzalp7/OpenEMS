@@ -35,7 +35,6 @@ const DynamicForm = ({ schema, formConfig, onSubmit, defaultValues }) => {
         return <LabeledInput key={name} type={type} name={name} label={label} register={register} error={errors[name]} />;
     }
   };
-
   const handleFormSubmit = (data) => {
     //console.log(data);
     onSubmit(data);

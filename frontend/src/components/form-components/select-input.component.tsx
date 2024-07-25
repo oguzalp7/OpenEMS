@@ -19,7 +19,7 @@ const SelectInput = ({ name, label, options, register, error }) => {
           <Text noOfLines={1} as={'b'}>{label.toUpperCase()}:</Text>
         </FormLabel> */}
         <Select id={name} {...register(name)}>
-          <option value=""><Text as={'b'}>{label_.toUpperCase()}</Text></option>
+          <option value=""><Text as={'b'}>{label_ ? label_.toUpperCase() : 'LABEL NOT FOUND'}</Text></option>
           {options.map((option) => (
             <option key={option.id} value={option.id || option.ID}>{option["AD-SOYAD"]  || option.name}</option>
           ))}

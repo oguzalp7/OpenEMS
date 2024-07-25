@@ -67,7 +67,7 @@ def create_user_employee(user: user_dependency, db: db_dependency, schema: UserE
 
     return {"user": user_data, "employee": employee_data}
 
-@router.get('/schema', response_model=Dict[str, Any])
+@router.get('/schema/', response_model=Dict[str, Any])
 async def get_schema():
     return UserEmployeeCreateSchema.schema()
 

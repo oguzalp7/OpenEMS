@@ -80,3 +80,103 @@ export const createUserEmployee = async (data) => {
     
     return response.status
 }
+
+export const createBranch = async (data) => {
+    const session = await getSession();
+
+    const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+    };
+    const response = await apiClient.post('/branch/', data, requestOptions);
+    
+    return response.status
+}
+
+export const createDepartment = async (data) => {
+    const session = await getSession();
+
+    const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+    };
+    const response = await apiClient.post('/departments/', data, requestOptions);
+    
+    return response.status
+}
+
+export const createEmploymentType = async (data) => {
+    const session = await getSession();
+
+    const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+    };
+    const response = await apiClient.post('/employment-types/', data, requestOptions);
+    
+    return response.status
+}
+
+export const createPaymentType = async (data) => {
+    const session = await getSession();
+
+    const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+    };
+    const response = await apiClient.post('/payment-types/', data, requestOptions);
+    
+    return response.status
+}
+
+export const createCustomer = async (data) => {
+    const session = await getSession();
+
+    const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+    };
+    data.name = data.name.toLocaleUpperCase('tr-TR');
+    data.phone_number = data.phone_number.replace(" ", "");
+    const response = await apiClient.post('/customer/', data, requestOptions);
+    
+    return response.status
+}
+
+export const createProcess = async (data) => {
+    const session = await getSession();
+
+    const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+    };
+    const response = await apiClient.post('/processes/', data, requestOptions);
+    
+    return response.status
+}
+
+/* export const deleteCustomer = async (customerId) => {
+    const session = await getSession();
+
+    const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+    };
+    const response = await apiClient.delete('/customer/${customerId}', requestOptions);
+    
+    return response.status
+} */

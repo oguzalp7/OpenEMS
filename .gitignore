@@ -10,4 +10,5 @@ backend/__pycache__/
 backend/schemas/__pycache__/
 backend/schemas/__pycache__
 
+backend/fastepienv/
 frontend_depreciated

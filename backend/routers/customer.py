@@ -13,7 +13,7 @@ from .auth import get_current_user
 from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, convert_result_to_dict
 import logging
 
-from schemas.customer import CustomerSchema, CustomerCreateSchema
+from schemas.customer import CustomerSchema, CustomerCreateSchema, CustomerCreSchema
 
 router = APIRouter(prefix='/customer', tags=['Customers'])
 
@@ -46,6 +46,7 @@ async def create_customer(user: user_dependency, db: db_dependency, schema: Cust
     check_privileges(user, 5)
 
     data = Customer(**schema.model_dump(), added_by=user.get('id'))
+    data.phone_number = data.phone_number.replace(" ", "")
     db.add(data)
     db.commit()
     db.refresh(data)
@@ -108,6 +109,10 @@ def get_country_codes(user: user_dependency, db: db_dependency):
     distinct_country_codes = db.query(Customer.country_code).distinct().all()
     return [code[0] for code in distinct_country_codes]
 
+@router.get('/schema/', response_model=Dict[str, Any])
+async def get_schema():
+    return CustomerCreSchema.schema()
+
 @router.put("/{customer_id}", response_model=CustomerCreateSchema, status_code=status.HTTP_201_CREATED)
 def update_customer(customer_id: int, schema: CustomerCreateSchema, db: db_dependency, user: user_dependency):
     check_privileges(user, 5)
@@ -115,7 +120,7 @@ def update_customer(customer_id: int, schema: CustomerCreateSchema, db: db_depen
     if db_customer is None:
         raise HTTPException(status_code=404, detail="Customer not found")
     
-    db_customer.name = schema.name
+    db_customer.name = upper_tr(schema.name)
     db_customer.country_code = schema.country_code
     db_customer.phone_number = schema.phone_number
     db_customer.black_listed = schema.black_listed

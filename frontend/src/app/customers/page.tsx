@@ -1,12 +1,12 @@
 // pages/customers.js
 "use client";
 
-import { getSession } from '@/actions';
+import { getSession, deleteCustomer } from '@/actions';
 import { apiClient } from '@/apiClient';
 import ChakraDataTable from '@/components/data-table.component';
 import Loading from '@/components/loading.component';
 import ChakraModal from '@/components/modal.component';
-import CreateCustomerForm from '@/components/create-customer-form.component';
+import Customer from '@/components/customer-form.component';
 import { fetchData, validateAndCombineContact } from '@/utils';
 import { Button, Checkbox, Input, InputGroup, InputLeftAddon, Select, Stack, VStack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react'
@@ -170,7 +170,7 @@ const Customers = () => {
       
       try{
         if(recordId){
-          const response = await apiClient.get(`/event/${recordId}`, requestOptions);
+          const response = await apiClient.get(`/customer/${recordId}`, requestOptions);
           setModalContent(response.data)
           setRecordId('')
         }
@@ -183,9 +183,29 @@ const Customers = () => {
     fetchRecordById();
   }, [recordId]);
 
-  const handleDelete = (rowData) => {
-    console.log('delete will not be implemented.');
-  }
+  const handleDelete = async (rowData) => {
+    /* const originalRowData = originalData.find((data) => data.SIRA === rowData.SIRA);
+    if (!originalRowData) {
+      console.error('No matching data found in originalData for SIRA:', rowData.SIRA);
+      return;
+    }
+    console.log(originalRowData)
+    const customerId = originalRowData.id;
+    const requestOptions = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sess.token}`,
+      },
+    };
+  
+    try {
+      await apiClient.delete(`/customer/${customerId}`, requestOptions);
+      setData((prevData) => prevData.filter((customer) => customer.id !== customerId));
+      setOriginalData((prevData) => prevData.filter((customer) => customer.id !== customerId));
+    } catch (error) {
+      console.error('Error deleting customer:', error.response ? error.response.data : error.message);
+    } */
+  };
 
 
   // define buttons
@@ -202,7 +222,7 @@ const Customers = () => {
     },
         
   ];
- console.log(isModalOpen)
+
   return (
     <VStack>
       <Stack flexDir={['column', 'column', 'row', 'row']}>
@@ -241,7 +261,7 @@ const Customers = () => {
       <Button onClick={openModal}>YENİ</Button>
       <ChakraModal
           isClosed={!isModalOpen}
-          children={<CreateCustomerForm/>}
+          children={<Customer/>}
           contentButtons={[]}
           actionButtons={[]}
         />
@@ -249,7 +269,7 @@ const Customers = () => {
       <Button background={'transparent'} onClick={resetFilters}>RESET</Button>
       </Stack>
       {data ? (
-        <ChakraDataTable  obj={data} title={'MÜŞTERİLER'} showButtons={true} customButtons={customButtons}/>
+        <ChakraDataTable  obj={data} title={'MÜŞTERİLER'} showButtons={true} customButtons={customButtons} />
       ):(
         <Loading/>
       )}

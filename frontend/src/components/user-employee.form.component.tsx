@@ -129,7 +129,7 @@ const UserEmployee = () => {
                 },
               };
             try {
-                const response = await apiClient.get('/user-employee/schema', requestOptions);
+                const response = await apiClient.get('/user-employee/schema/', requestOptions);
                 setSchema(response.data);
               } catch (error) {
                 setError(error);
