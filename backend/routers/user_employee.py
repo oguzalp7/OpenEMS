@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from typing import Annotated
+from typing import Annotated, Any, Dict
 
 from models import User, Employee
 from database import SessionLocal
@@ -66,6 +66,10 @@ def create_user_employee(user: user_dependency, db: db_dependency, schema: UserE
     db.refresh(user_data)
 
     return {"user": user_data, "employee": employee_data}
+
+@router.get('/schema', response_model=Dict[str, Any])
+async def get_schema():
+    return UserEmployeeCreateSchema.schema()
 
 
 # TODO-1: 

@@ -1,6 +1,6 @@
 "use client"
 
-import { Box, Select } from '@chakra-ui/react'
+import { Box, Select, Text } from '@chakra-ui/react'
 import React, { useEffect } from 'react'
 
 const ChakraDropdown = ({options, label, initialValue, value, onSelect}) => {
@@ -20,7 +20,7 @@ const ChakraDropdown = ({options, label, initialValue, value, onSelect}) => {
   return (
     <Box>
         <Select value={selectedValue} onChange={handleChange}>
-        <option value={initialValue} label={`${label}`}>{`${label}`}</option>
+        <option value={initialValue} label={`${label}`}><Text as={'b'}>{`${label}`}</Text></option>
         {options.map((option: { id: React.Key | null | undefined }) => (
             <option key={option.id} value={option.id || option.ID} label={option["AD-SOYAD"] || option.name} >{option["AD-SOYAD"]  || option.name}</option>
         ))}

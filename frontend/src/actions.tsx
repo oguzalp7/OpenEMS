@@ -66,3 +66,17 @@ export const logout = async () => {
     session.destroy();
     redirect("/login");
 }
+
+export const createUserEmployee = async (data) => {
+    const session = await getSession();
+
+    const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${session.token}`,
+        },
+    };
+    const response = await apiClient.post('/user-employee/', data, requestOptions);
+    
+    return response.status
+}

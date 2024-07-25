@@ -229,6 +229,7 @@ const Customers = () => {
           type='tel'
           onChange={handleSelectPhoneNumber} 
           placeholder='Telefon Numarası' />
+      {/* <TextInput name={'phoneNumber'} type={'text'} label={'phoneNumber'}/> */}
       </InputGroup>
       <Input
           value={name}

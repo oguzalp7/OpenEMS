@@ -43,15 +43,15 @@ const Navbar =  () => {
                 </Flex>
             </Flex>
             <IconButton
-                        background={"transparent"}
-                        size='xl'
-                        aria-label="Toggle color mode"
-                        w={10}
-                        onClick={toggleColorMode}
-                        icon={colorMode === "light" ? <MoonIcon/> : <SunIcon/>}
-                        border={'1px'}
-                        borderColor={"transparent"}
-                    />
+                background={"transparent"}
+                size='xl'
+                aria-label="Toggle color mode"
+                w={10}
+                onClick={toggleColorMode}
+                icon={colorMode === "light" ? <MoonIcon/> : <SunIcon/>}
+                border={'1px'}
+                borderColor={"transparent"}
+            />
         </Flex>
         
     );

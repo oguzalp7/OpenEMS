@@ -5,6 +5,7 @@ import { Tabs, TabList, TabPanels, Tab, TabPanel, VStack, Box, Heading, Table, T
 import { getSession } from '@/actions';
 import { apiClient } from '@/apiClient';
 import ChakraDataTable from '@/components/data-table.component';
+import UserEmployee from '@/components/user-employee.form.component';
 
 const Settings = () => {
   const [departments, setDepartments] = useState([]);
@@ -71,7 +72,8 @@ const Settings = () => {
       <p>PRICES</p>
     </TabPanel>
     <TabPanel>
-      <p>INSERT USER-EMPLOYEE!</p>
+      {/* <p>INSERT USER-EMPLOYEE!</p> */}
+      <UserEmployee/>
     </TabPanel>
     <TabPanel>
       <p>CHANGE PASSWORD</p>
