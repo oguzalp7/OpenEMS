@@ -202,7 +202,7 @@ const Customers = () => {
     },
         
   ];
-  console.log(isModalOpen)
+ console.log(isModalOpen)
   return (
     <VStack>
       <Stack flexDir={['column', 'column', 'row', 'row']}>
@@ -239,11 +239,11 @@ const Customers = () => {
       <Checkbox isChecked={blacklisted} onChange={handleSelectBlacklisted}>Kara Liste</Checkbox>
       <Button onClick={openModal}>YENİ</Button>
       <ChakraModal
-          isOpen={isModalOpen}
-          onClose={closeModal}
-        >
-          <CreateCustomerForm onClose={closeModal} />
-        </ChakraModal>
+          isClosed={!isModalOpen}
+          children={<CreateCustomerForm/>}
+          contentButtons={[]}
+          actionButtons={[]}
+        />
       
       <Button background={'transparent'} onClick={resetFilters}>RESET</Button>
       </Stack>

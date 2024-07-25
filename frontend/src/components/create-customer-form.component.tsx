@@ -4,7 +4,7 @@ import { FormControl, FormLabel, Input, Switch, Box, Button } from '@chakra-ui/r
 import { getSession } from '@/actions';
 import { apiClient } from '@/apiClient';
 
-const CreateCustomerForm = ({ onClose }) => {
+const CreateCustomerForm = () => {
   const [name, setName] = useState('');
   const [countryCode, setCountryCode] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
@@ -30,7 +30,6 @@ const CreateCustomerForm = ({ onClose }) => {
       const response = await apiClient.post('/customer/', newCustomer, requestOptions);
       console.log('Customer created:', response.data);
       // Handle successful creation (e.g., close modal, reset form, etc.)
-      onClose();
       setName('');
       setCountryCode('');
       setPhoneNumber('');
