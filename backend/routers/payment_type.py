@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
-from typing import Annotated, List
+from typing import Annotated, List, Any, Dict
 
 from models import PaymentTypes
 from database import SessionLocal
@@ -10,7 +10,7 @@ from .auth import get_current_user
 from .router_utils import check_privileges
 import logging
 
-from schemas.payment_type import PaymentType
+from schemas.payment_type import PaymentType, PaymentTypeCreateSchema
 
 router = APIRouter(prefix='/payment-types', tags=['PaymentTypes'])
 
@@ -48,6 +48,10 @@ def read_payment_type(type_id: int, db: db_dependency, user: user_dependency):
     if type is None:
         raise HTTPException(status_code=404, detail="Payment type not found")
     return type
+    
+@router.get('/schema/', response_model=Dict[str, Any])
+async def get_schema():
+    return PaymentTypeCreateSchema.schema()
 
 @router.put("/{type_id}", response_model=PaymentType, status_code=status.HTTP_201_CREATED)
 def update_payment_type(type_id: int, schema: PaymentType, db: db_dependency, user: user_dependency):

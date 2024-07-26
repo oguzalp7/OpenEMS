@@ -113,7 +113,7 @@ class Employee(Base):
 class Process(Base):
     __tablename__ = 'process'
     department_id = Column(Integer, ForeignKey('departments.id'))
-    duration = Column(Integer, nullable=True)
+    duration = Column(Float, nullable=True)
     attributes = Column(JSON) 
     department = relationship("Department", back_populates="processes")
     """
