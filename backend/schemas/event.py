@@ -25,3 +25,4 @@ class EventSchema(BaseModel):
 
 class EventCreateSchema(EventSchema):
     details: Dict[str, Any] 
+

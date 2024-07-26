@@ -41,8 +41,11 @@
     - ~~FOOTER~~
 
 * Implement forms for:
-    - branch (ignore departments)
-    - departments
-    - employment_type
-    - payment_type
-    - process
+    - ~~branch (ignore departments)~~
+    - ~~departments~~
+    - ~~employment_type~~
+    - ~~payment_type~~
+    - ~~process~~
+    - process price per employee (in a single row)
+    - process price for initial excel file (query each employee and process according to the employees department, set initial value = 0)
+    - implement change password

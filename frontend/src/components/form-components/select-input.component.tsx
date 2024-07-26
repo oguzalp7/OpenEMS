@@ -10,8 +10,16 @@ const SelectInput = ({ name, label, options, register, error }) => {
     'Auth Id': 'YETKİ',
     'Branch Id': 'ŞUBE',
     'Employment Type Id': 'ÇALIŞMA TİPİ',
+    'Employee Id': 'PERSONEL',
+    'Optional Makeup Id': 'MAKEUP2',
+    'Hair Stylist Id': 'SAÇ',
+    'Plus': 'GELİN+',
+    'Payment Type Id': 'ÖDEME TİPİ',
+    'Process Id': 'İŞLEM'
   };
-  const label_ = labelMapping[label];
+  const label_ = labelMapping[label] || label;
+  
+  
   return (
     <FormControl isInvalid={error}>
       <HStack>
@@ -19,7 +27,7 @@ const SelectInput = ({ name, label, options, register, error }) => {
           <Text noOfLines={1} as={'b'}>{label.toUpperCase()}:</Text>
         </FormLabel> */}
         <Select id={name} {...register(name)}>
-          <option value=""><Text as={'b'}>{label_.toUpperCase()}</Text></option>
+          {label_ && (<option value=""><Text as={'u'}>{label_.toUpperCase()}</Text></option>)}
           {options.map((option) => (
             <option key={option.id} value={option.id || option.ID}>{option["AD-SOYAD"]  || option.name}</option>
           ))}

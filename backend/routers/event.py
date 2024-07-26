@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy.orm import Session, aliased
-from typing import Annotated, List, Optional, Dict
+from typing import Annotated, List, Optional, Dict, Any
 from sqlalchemy import func
 
 from database import SessionLocal
@@ -29,6 +29,25 @@ def get_db():
 db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 logger = logging.getLogger(__name__)
+
+@router.get('/schema/base/', response_model=Dict[str, Any])
+async def get_schema_base():
+    return EventCreateSchema.schema()
+
+
+@router.get('/schema/details/{dep}', response_model=Dict[str, Any])
+async def get_schema_details(db: db_dependency, dep: int):
+    process_query = db.query(Process.attributes).join(Department, Department.id == Process.department_id).filter(Department.id == dep).first()
+    if process_query is None:
+        return {} #raise HTTPException(status_code=404, detail='İçerik bulunamadı.')
+    
+    attributes = process_query[0]
+    
+    DynamicSchema = create_dynamic_model("AttributeSchema", attributes=attributes)
+    
+    dynamic_schema = DynamicSchema.schema()
+    
+    return dynamic_schema
 
 @router.post("/", status_code=status.HTTP_201_CREATED) #, response_model=EventCreateSchema)
 async def create_event(user: user_dependency, db: db_dependency, schema: EventCreateSchema):
