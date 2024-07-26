@@ -17,7 +17,7 @@ import logging
 
 from schemas.process_price import ProcessPriceSchema
 
-router = APIRouter(prefix='/proces-prices', tags=['ProcessPrices'])
+router = APIRouter(prefix='/process-prices', tags=['ProcessPrices'])
 
 def get_db():
     db = SessionLocal()
@@ -41,7 +41,7 @@ async def create_process_price(user: user_dependency, db: db_dependency, schema:
     db.refresh(data)
     return data
 
-@router.post("/all_processes/", status_code=status.HTTP_201_CREATED)
+@router.post("/all-processes/", status_code=status.HTTP_201_CREATED)
 async def create_process_prices_per_employee(user: user_dependency, db: db_dependency, e: int):
     check_privileges(user, 5)
 

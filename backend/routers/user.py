@@ -87,6 +87,18 @@ def read_user(db: db_dependency, user: user_dependency, user_id: int = Path(gt=0
         raise HTTPException(status_code=404, detail="User not found")
     return data
 
+@router.get("/password/", status_code=status.HTTP_200_OK)
+def read_password(db: db_dependency, user: user_dependency):
+    
+    check_privileges(user, 1)
+    
+    data = db.query(User).filter(User.id == user.get('id')).first()
+
+    if data is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return data.hashed_password
+
+
 @router.put("/{user_id}", status_code=status.HTTP_201_CREATED)
 async def update_user(db: db_dependency, user: user_dependency, schema: UserUpdateSchema, user_id: int = Path(gt=0)):
     check_privileges(user, 1)
@@ -126,7 +138,7 @@ def delete_user(db: db_dependency, user: user_dependency, user_id: int = Path(gt
 
 
     
-@router.put('/password', status_code=status.HTTP_201_CREATED)
+@router.put('/password/', status_code=status.HTTP_201_CREATED)
 async def change_password(user: user_dependency, db: db_dependency, schema: PasswordChangeSchema):
     if user is None:
         raise HTTPException(status_code=401, detail='Authentication Failed')
