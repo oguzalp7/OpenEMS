@@ -13,7 +13,7 @@ from .auth import get_current_user
 from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, convert_result_to_dict
 import logging
 
-from schemas.process import ProcessSchema, ProcessCreateSchema
+from schemas.process import ProcessSchema, ProcessCreateSchema, ProcessCreSchema
 
 router = APIRouter(prefix='/processes', tags=['Processes'])
 
@@ -293,6 +293,10 @@ def get_processed_processes(user: user_dependency, db: db_dependency, dep: Optio
         
     query = query.offset(skip).limit(limit).all()         
     return [convert_result_to_dict(row, process_api_columns) for row in query]
+
+@router.get('/schema/', response_model=Dict[str, Any])
+async def get_schema():
+    return ProcessCreSchema.schema()
 
 @router.put("/{process_id}", response_model=ProcessCreateSchema, status_code=status.HTTP_201_CREATED)
 def update_process(process_id: int, schema: ProcessCreateSchema, db: db_dependency, user: user_dependency):

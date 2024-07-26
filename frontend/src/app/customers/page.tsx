@@ -1,16 +1,27 @@
 // pages/customers.js
 "use client";
 
-import { getSession } from '@/actions';
+import { getSession, deleteCustomer } from '@/actions';
 import { apiClient } from '@/apiClient';
 import ChakraDataTable from '@/components/data-table.component';
 import Loading from '@/components/loading.component';
-import TextInput from '@/components/text-input.component';
-import { validateAndCombineContact } from '@/utils';
+import ChakraModal from '@/components/modal.component';
+import Customer from '@/components/customer-form.component';
+import { fetchData, validateAndCombineContact } from '@/utils';
 import { Button, Checkbox, Input, InputGroup, InputLeftAddon, Select, Stack, VStack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react'
 
 const Customers = () => {
+  const [sess, setSession] = useState({});
+
+  useEffect(() => {
+    const fetchSessionInfo = async () => {
+      const session = await getSession();
+      setSession(session);
+    }
+    fetchSessionInfo();
+  }, [])
+
   const [countryCodes, setCountryCodes] = useState([]);
   const [selectedCountryCode, setSelectedCountryCode] = useState('')
 
@@ -20,8 +31,17 @@ const Customers = () => {
   
   const [blacklisted, setBlacklisted] = useState(false);
 
+  const [originalData, setOriginalData] = useState([])
   const [data, setData] = useState([]);
   const [url, setURL] = useState('/customer/');
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalContent, setModalContent] = useState(null);
+
+  const [recordId, setRecordId] = useState('');
+
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
    // configure fetch options
    useEffect(() => {
@@ -86,6 +106,7 @@ const Customers = () => {
         let processedData = response.data;
         processedData = validateAndCombineContact(processedData, 'TELEFON NUMARASI', 'ÜLKE KODU');
         setData(processedData);
+        setOriginalData(processedData);
       } catch (error) {
         console.error('Error fetching customers:', error);
       }
@@ -124,7 +145,84 @@ const Customers = () => {
     setPhoneNumber("")
     setBlacklisted(false)
   }
- 
+  const handleUpdate = (rowData) => {
+    //console.log(rowData);
+    const originalRowData = originalData.find((data) => data.SIRA === rowData.SIRA);
+    if (originalRowData) {
+      setRecordId(originalRowData.id);
+    } else {
+      console.error('No matching data found in originalData for SIRA:', rowData.SIRA);
+    }
+    //console.log(originalRowData);
+    setRecordId(originalRowData.id)
+    // setModalContent(rowData);
+    setIsModalOpen(true);
+  };
+
+  useEffect(() => {
+    const fetchRecordById = async () => {
+      const requestOptions = {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${sess.token}`,
+        },
+      };
+      
+      try{
+        if(recordId){
+          const response = await apiClient.get(`/customer/${recordId}`, requestOptions);
+          setModalContent(response.data)
+          setRecordId('')
+        }
+      }catch(error){
+        console.error('Error fetching record:', error);
+        setModalContent(null)
+        setRecordId('')
+      }
+    }
+    fetchRecordById();
+  }, [recordId]);
+
+  const handleDelete = async (rowData) => {
+    /* const originalRowData = originalData.find((data) => data.SIRA === rowData.SIRA);
+    if (!originalRowData) {
+      console.error('No matching data found in originalData for SIRA:', rowData.SIRA);
+      return;
+    }
+    console.log(originalRowData)
+    const customerId = originalRowData.id;
+    const requestOptions = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sess.token}`,
+      },
+    };
+  
+    try {
+      await apiClient.delete(`/customer/${customerId}`, requestOptions);
+      setData((prevData) => prevData.filter((customer) => customer.id !== customerId));
+      setOriginalData((prevData) => prevData.filter((customer) => customer.id !== customerId));
+    } catch (error) {
+      console.error('Error deleting customer:', error.response ? error.response.data : error.message);
+    } */
+  };
+
+
+  // define buttons
+  const customButtons = [
+    {
+        label: 'Güncelle',
+        color: 'gray',
+        onClick: handleUpdate,
+    },
+    {
+        label: 'Sil',
+        color: 'red',
+        onClick: handleDelete,
+    },
+        
+  ];
+
   return (
     <VStack>
       <Stack flexDir={['column', 'column', 'row', 'row']}>
@@ -158,14 +256,24 @@ const Customers = () => {
           onChange={handleSelectName}
           placeholder='Müşteri Adı'
         />
+
       <Checkbox isChecked={blacklisted} onChange={handleSelectBlacklisted}>Kara Liste</Checkbox>
+      <Button onClick={openModal}>YENİ</Button>
+      <ChakraModal
+          isClosed={!isModalOpen}
+          children={<Customer/>}
+          contentButtons={[]}
+          actionButtons={[]}
+        />
+      
       <Button background={'transparent'} onClick={resetFilters}>RESET</Button>
       </Stack>
       {data ? (
-        <ChakraDataTable  obj={data} title={'MÜŞTERİLER'} showButtons={false}/>
+        <ChakraDataTable  obj={data} title={'MÜŞTERİLER'} showButtons={true} customButtons={customButtons} />
       ):(
         <Loading/>
       )}
+      
     </VStack>
 
   );

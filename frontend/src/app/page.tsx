@@ -9,7 +9,8 @@ import {
   InputLeftAddon,
   Input,
   InputRightAddon,
-  Button
+  Button,
+  VStack
 } from '@chakra-ui/react'
 
 import ChakraDropdown from "@/components/dropdown.component";
@@ -18,6 +19,11 @@ import ChakraModal from "@/components/modal.component";
 import DynamicForm from "@/components/dynamic-form.component";
 
 import * as yup from 'yup';
+import Branch from "@/components/branch-form.component";
+import Department from "@/components/department-form.component";
+import PaymentType from "@/components/payment-type-form.component";
+import EmploymentType from "@/components/employment-type-form.component";
+import Process from "@/components/process-form.component";
 
 const CustomInput = () => {
 
@@ -112,7 +118,14 @@ const  Home = () =>  {
     {/* <ChakraModal buttons={buttons}>
         <CustomInput/>
     </ChakraModal> */}
+    <VStack>
     <DynamicForm schema={schema} formConfig={formConfig} onSubmit={handleFormSubmit} />
+    <Branch/>
+    <Department/>
+    <EmploymentType/>
+    <PaymentType/>
+    <Process/>
+    </VStack>
     </>
   );
 }

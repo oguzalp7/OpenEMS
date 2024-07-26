@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
-from typing import Annotated, List
+from typing import Annotated, List, Dict, Any
 from models import Branch, Department
 from database import SessionLocal
 from starlette import status
@@ -8,7 +8,7 @@ from starlette import status
 from .auth import get_current_user
 from .router_utils import check_privileges
 
-from schemas.branch import BranchSchema, BranchReadSchema, BranchFetchSchema
+from schemas.branch import BranchSchema, BranchReadSchema, BranchFetchSchema, BranchCreateSchema
 import logging
 from datetime import datetime
 
@@ -62,6 +62,10 @@ def read_branch(db: db_dependency, user: user_dependency, branch_id: int = Path(
     if branch is None:
         raise HTTPException(status_code=404, detail="Şube Bulunamadı. ")
     return branch
+
+@router.get('/schema/', response_model=Dict[str, Any])
+async def get_schema():
+    return BranchCreateSchema.schema()
 
 @router.put("/{branch_id}", status_code=status.HTTP_200_OK)
 def update_branch(db: db_dependency, user: user_dependency, schema: BranchSchema, branch_id: int = Path(gt=0)):

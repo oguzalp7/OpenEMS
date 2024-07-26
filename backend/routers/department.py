@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter, Depends, HTTPException, Path
 from sqlalchemy.orm import Session
-from typing import  Annotated
+from typing import  Annotated, Any, Dict
 
 from .auth import get_current_user
 from .router_utils import check_privileges
@@ -11,7 +11,7 @@ from models import Department
 from database import SessionLocal
 from starlette import status
 
-from schemas.department import DepartmentSchema
+from schemas.department import DepartmentSchema, DepartmentCreateSchema
 import logging
 
 router = APIRouter(prefix='/departments', tags=['departments'])
@@ -51,6 +51,10 @@ def read_department(db: db_dependency, user: user_dependency, department_id: int
     if department is None:
         raise HTTPException(status_code=404, detail="Department not found")
     return department
+
+@router.get('/schema/', response_model=Dict[str, Any])
+async def get_schema():
+    return DepartmentCreateSchema.schema()
 
 @router.put("/{department_id}", status_code=status.HTTP_200_OK, response_model=DepartmentSchema)
 def update_department(db: db_dependency, user: user_dependency, schema: DepartmentSchema, department_id: int = Path(gt=0)):

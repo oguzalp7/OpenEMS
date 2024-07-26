@@ -22,9 +22,11 @@ const ChakraModal = ({ children, isClosed, contentButtons, actionButtons }) => {
   const [previousContents, setPreviousContents] = useState([]);
   const [showContentButtons, setShowContentButtons] = useState(true);
 
-  useEffect(() => {
-    onOpen();
-  }, []);
+  useEffect(()=> {
+    if(!isClosed){
+      onOpen();
+    }
+  }, [isClosed])
 
   useEffect(()=> {
     if(isClosed){
@@ -59,7 +61,9 @@ const ChakraModal = ({ children, isClosed, contentButtons, actionButtons }) => {
         setShowContentButtons(false)
     }
   }, [previousContents]);
-
+  
+  console.log(isClosed)
+  console.log(isOpen)
   return (
     <>
       <Modal isOpen={isOpen} onClose={onClose}>
@@ -77,7 +81,7 @@ const ChakraModal = ({ children, isClosed, contentButtons, actionButtons }) => {
                         {/* <Button   onClick={initialContent} w={'sm'}>
                             BAŞA DÖN
                         </Button> */}
-                        <IconButton  aria-label='BAŞA DÖN' onClick={initialContent} icon={<ArrowLeftIcon />} />
+                        <IconButton  aria-label='BAŞA DÖN' onClick={handleBack} icon={<ArrowLeftIcon />} />
                     </Stack>
                 </Box>
                 
