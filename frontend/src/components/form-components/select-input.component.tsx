@@ -10,8 +10,16 @@ const SelectInput = ({ name, label, options, register, error }) => {
     'Auth Id': 'YETKİ',
     'Branch Id': 'ŞUBE',
     'Employment Type Id': 'ÇALIŞMA TİPİ',
+    'Employee Id': 'PERSONEL',
+    'Optional Makeup Id': 'MAKEUP2',
+    'Hair Stylist Id': 'SAÇ',
+    'Plus': 'GELİN+',
+    'Payment Type Id': 'ÖDEME TİPİ',
+    'Process Id': 'İŞLEM'
   };
-  const label_ = labelMapping[label];
+  const label_ = labelMapping[label] || label;
+  
+  
   return (
     <FormControl isInvalid={error}>
       <HStack>

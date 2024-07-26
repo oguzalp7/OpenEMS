@@ -121,34 +121,39 @@ export const hideKeysInArrayOfObjects = (array: Record<string, any>[], keysToHid
 
 
 export const generateFormConfig = (schema) => {
-  return Object.keys(schema.properties).map((key) => {
-    const field = schema.properties[key];
-    let type;
-
-    switch (field.type) {
-      case 'string':
-        type = field.format === 'date' ? 'date' : 'text';
-        break;
-      case 'integer':
-        type = 'select'; // Assuming integers are foreign keys
-        break;
-      case 'boolean':
-        type = 'checkbox';
-        break;
-      case 'number':
-        type = 'number';
-        break;
-      default:
-        type = 'text';
-    }
-
-    return {
-      type,
-      name: key,
-      label: field.title || key,
-      options: []
-    };
-  });
+  if(schema){
+    return Object.keys(schema.properties).map((key) => {
+      const field = schema.properties[key];
+      let type;
+  
+      switch (field.type) {
+        case 'string':
+          type = field.format === 'date' ? 'date' : 'text';
+          break;
+        case 'integer':
+          type = 'select'; // Assuming integers are foreign keys
+          break;
+        case 'boolean':
+          type = 'checkbox';
+          break;
+        case 'number':
+          type = 'number';
+          break;
+        default:
+          type = 'text';
+      }
+  
+      return {
+        type,
+        name: key,
+        label: field.title || key,
+        options: []
+      };
+    });
+  }else{
+    return {};
+  }
+  
 };
 
 export const alterFormConfigType = (formConfig, keys, targetType) => {

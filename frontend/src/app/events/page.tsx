@@ -374,8 +374,17 @@ const Events = () => {
     fetchRecordById();
   }, [recordId]);
 
-  const handleDelete = (rowData) => {
+  const handleDelete = async (rowData) => {
     console.log('delete will not be implemented.');
+    const requestOptions = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sess.token}`,
+      },
+    };
+    const originalRowData = originalData.find((data) => data.SIRA === rowData.SIRA);
+    //const response = await apiClient.delete(`/event/${originalRowData.id}`, requestOptions)
+    console.log(originalRowData)
   }
   
   // define buttons
@@ -421,7 +430,7 @@ const Events = () => {
     },
   ];
 
-  console.log(isModalOpen)
+  //console.log(isModalOpen)
 
   return (
     <VStack>
