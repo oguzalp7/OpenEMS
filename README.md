@@ -40,7 +40,8 @@
     - ~~BODY~~
     - ~~FOOTER~~
 
-* Implement forms for:
+* ~~Implement forms for:~~
+    - ~~customer~~
     - ~~branch (ignore departments)~~
     - ~~departments~~
     - ~~employment_type~~

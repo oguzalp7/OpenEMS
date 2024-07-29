@@ -7,7 +7,7 @@ import { getSession } from '@/actions';
 import { Box, useToast, Text, HStack, VStack } from '@chakra-ui/react';
 import * as yup from 'yup';
 
-import { alterFormConfigType, generateFormConfig, renameFormLabels } from '@/utils';
+import { alterFormConfigType, findFieldIndex, generateFormConfig, renameFormLabels } from '@/utils';
 import ChakraDropdown from '@/components/dropdown.component';
 import Loading from '@/components/loading.component';
 import DynamicForm from '@/components/dynamic-form.component';
@@ -30,7 +30,7 @@ const CreateEvent = () => {
   // for higher level auth users
   const [showBranchDropdown, setShowBranchDropdown] = useState(false);
   const [branches, setBranches] = useState([]);
-  const [selectedBranch, setSelectedBranch] = useState(session.branchId || '')
+  const [selectedBranch, setSelectedBranch] = useState(session.branchId || '1' || '')
 
   // create base event schema from pydantic schema
   const [baseSchema, setBaseSchema] = useState(null);
@@ -285,8 +285,20 @@ const CreateEvent = () => {
   };
   
   updatedFormConfig = renameFormLabels(updatedFormConfig, labelMapping);
-
+  console.log(processes)
   // fetch dropdown data
+  useEffect(() => {
+    const processDropdownIndex = findFieldIndex(updatedFormConfig, 'select', 'process_id');
+    if(updatedFormConfig && updatedFormConfig[processDropdownIndex] && updatedFormConfig[processDropdownIndex].options){
+      if(typeof(updatedFormConfig[processDropdownIndex].options) === typeof(processes)){
+          updatedFormConfig[processDropdownIndex].options = processes;
+      }
+  }
+  }, [processes]);
+
+
+
+
   const onSubmit = async (data) => {
     console.log(data);
   }
