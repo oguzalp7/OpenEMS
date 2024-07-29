@@ -6,12 +6,12 @@ import { useEffect, useState } from 'react';
 import { generateFormConfig, alterFormConfigType, findFieldIndex, renameFormLabels } from '@/utils';
 
 import * as yup from 'yup';
-import DynamicForm from './dynamic-form.component';
+import DynamicForm from '../dynamic-form.component';
 import { Box, Text, useToast } from '@chakra-ui/react';
-import { createUserEmployee, getSession } from '@/actions';
+import { createProcess, getSession } from '@/actions';
 
 
-const UserEmployee = () => {
+const Process = () => {
     // session state
     const [session, setSession] = useState({});
 
@@ -58,37 +58,7 @@ const UserEmployee = () => {
     // ------------------------------------------------------------------------------------------------------------------------------------------------
 
     // fetch dropdown options
-    useEffect(()=>{
-        
-        const fetchBranches = async () =>{
-            try {
-                const response = await apiClient.get('/branch/?skip=0&limit=50', requestOptions);
-                
-                setBranches(response.data);
-            } catch (error) {
-                console.error('Error fetching branches:', error);
-                setBranches([])
-            }
-        }
-        fetchBranches(); 
-    }, [session, session.token, requestOptions]);
-
-
-    useEffect(() => {
-        const fetchAuths = async () => {
-            try {
-                const response = await apiClient.get('/auth/?skip=0&limit=10', requestOptions);
-                
-                setAuths(response.data);
-            } catch (error) {
-                console.error('Error fetching branches:', error);
-                setAuths([])
-            }
-        }
-        fetchAuths();
-    }, [session,  session.token, requestOptions]);
-
-
+    
     useEffect(() => {
         const fetchDepartments = async () => {
             try {
@@ -102,21 +72,6 @@ const UserEmployee = () => {
         fetchDepartments();
     }, [session,  session.token, requestOptions]);
     
-
-    useEffect(() => {
-        const fetchEmploymentTypes = async () => {
-            try {
-                const response = await apiClient.get('/employment-types/?skip=0&limit=10', requestOptions);
-                
-                setEmploymentTypes(response.data);
-            } catch (error) {
-                console.error('Error fetching branches:', error);
-                setEmploymentTypes([])
-            }
-        }
-        fetchEmploymentTypes();
-    }, [session,  session.token, requestOptions])
-
     // ------------------------------------------------------------------------------------------------------------------------------------------------
     
 
@@ -129,7 +84,7 @@ const UserEmployee = () => {
                 },
               };
             try {
-                const response = await apiClient.get('/user-employee/schema/', requestOptions);
+                const response = await apiClient.get('/processes/schema/', requestOptions);
                 setSchema(response.data);
               } catch (error) {
                 setError(error);
@@ -171,75 +126,26 @@ const UserEmployee = () => {
 
     // define default values
     const defaultValues = {
-        'is_active': true,
-        'employment_start_date': new Date().toISOString().split('T')[0],
-        'employment_status': true,
-        'balance': 0,
-        'password': '123456',
-        'country_code': "+90"
+        'name': "",
+        'duration': 0
     }
-
-    // keys which will not rendered on the form
-    const keysToHidden = ['is_active', 'employment_status']
-
-    // hide the keys and values from the form
-    let updatedFormConfig = alterFormConfigType(formConfig, keysToHidden, 'hidden');
-    // ------------------------------------------------------------------------------------------------------------------------------------------------
 
     // load dropdown options
     useEffect(() => {
-        const branchDropdownIndex = findFieldIndex(updatedFormConfig, 'select', 'branch_id');
-        if(updatedFormConfig && updatedFormConfig[branchDropdownIndex] && updatedFormConfig[branchDropdownIndex].options){
-            if(typeof(updatedFormConfig[branchDropdownIndex].options) === typeof(branches)){
-                updatedFormConfig[branchDropdownIndex].options = branches;
-            }
-        }
-    }, [branches]);
-    
-    useEffect(() => {
-        const departmentDropdownIndex = findFieldIndex(updatedFormConfig, 'select', 'department_id');
+        const departmentDropdownIndex = findFieldIndex(formConfig, 'select', 'department_id');
         //console.log(updatedFormConfig[branchDropdownIndex])
-        if(updatedFormConfig && updatedFormConfig[departmentDropdownIndex] && updatedFormConfig[departmentDropdownIndex].options){
-            if(typeof(updatedFormConfig[departmentDropdownIndex].options) === typeof(departments)){
-                updatedFormConfig[departmentDropdownIndex].options = departments;
+        if(formConfig && formConfig[departmentDropdownIndex] && formConfig[departmentDropdownIndex].options){
+            if(typeof(formConfig[departmentDropdownIndex].options) === typeof(departments)){
+                formConfig[departmentDropdownIndex].options = departments;
             }
         }
     }, [departments]);
 
-    useEffect(() => {
-        const authDropdownIndex = findFieldIndex(updatedFormConfig, 'select', 'auth_id');
-        //console.log(updatedFormConfig[branchDropdownIndex])
-        if(updatedFormConfig && updatedFormConfig[authDropdownIndex] && updatedFormConfig[authDropdownIndex].options){
-            if(typeof(updatedFormConfig[authDropdownIndex].options) === typeof(auths)){
-                updatedFormConfig[authDropdownIndex].options = auths;
-            }
-        }
-    }, [auths]);
-
-    useEffect(() => {
-        const empoymentTypeDropdownIndex = findFieldIndex(updatedFormConfig, 'select', 'employment_type_id');
-        //console.log(updatedFormConfig[branchDropdownIndex])
-        if(updatedFormConfig && updatedFormConfig[empoymentTypeDropdownIndex] && updatedFormConfig[empoymentTypeDropdownIndex].options){
-            if(typeof(updatedFormConfig[empoymentTypeDropdownIndex].options) === typeof(employmentTypes)){
-                updatedFormConfig[empoymentTypeDropdownIndex].options = employmentTypes;
-            }
-        }
-    }, [employmentTypes]);
-
     const labelMapping = {
-        "Username": 'KULLANICI ADI',
-        "Password": 'ŞİFRE',
-        'Is Active': 'AKTİFLİK',
-        "Name": 'AD-SOYAD',
-        'Country Code': 'ÜLKE KODU',
-        'Phone Number': 'TELEFON',
-        'Job Title': 'İŞ TANIMI',
-        "Employment Start Date": 'İŞ BAŞLANGIÇ TARİHİ',
-        "Salary": 'MAAŞ',
-        'Balance': 'BAKİYE',
-        'Employment Status': 'ÇALIŞMA DURUMU'
+        'Name': 'ADI',
+        'Duration': 'SÜRE',
       };
-    updatedFormConfig = renameFormLabels(updatedFormConfig, labelMapping);
+    let updatedFormConfig = renameFormLabels(formConfig, labelMapping);
     
     // ------------------------------------------------------------------------------------------------------------------------------------------------
     const onSubmit = async (data) => {
@@ -250,8 +156,8 @@ const UserEmployee = () => {
             // show toaster
             //setShowToaster
             toast({
-                title: 'Kullanıcı Eklendi',
-                description: "We've created your account for you.",
+                title: 'İşlem Eklendi',
+                description: "İşleminiz Eklendi.",
                 status: 'success',
                 //duration: 9000,
                 isClosable: true,
@@ -261,6 +167,7 @@ const UserEmployee = () => {
     
     return(
         <Box>
+             <Text>İŞLEM EKLE</Text>
             {/* check auth & render dynamic form */}
             {session && session.authLevel >= 5 ? (
                    
@@ -276,4 +183,4 @@ const UserEmployee = () => {
     );
 }
 
-export default UserEmployee
+export default Process

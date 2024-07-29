@@ -1,6 +1,6 @@
 "use server"
 import { getSession } from "@/actions"
-import LoginForm from "@/components/login-form.component"
+import LoginForm from "@/components/forms/login-form.component"
 import { redirect } from "next/navigation"
 
 
