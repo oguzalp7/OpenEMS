@@ -19,11 +19,11 @@ import ChakraModal from "@/components/modal.component";
 import DynamicForm from "@/components/dynamic-form.component";
 
 import * as yup from 'yup';
-import Branch from "@/components/branch-form.component";
+import Branch from "@/components/forms/branch-form.component";
 import Department from "@/components/department-form.component";
-import PaymentType from "@/components/payment-type-form.component";
+import PaymentType from "@/components/forms/payment-type-form.component";
 import EmploymentType from "@/components/employment-type-form.component";
-import Process from "@/components/process-form.component";
+import Process from "@/components/forms/process-form.component";
 
 const CustomInput = () => {
 

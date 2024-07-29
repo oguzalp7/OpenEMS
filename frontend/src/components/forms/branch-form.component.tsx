@@ -6,12 +6,12 @@ import { useEffect, useState } from 'react';
 import { generateFormConfig, alterFormConfigType, findFieldIndex, renameFormLabels } from '@/utils';
 
 import * as yup from 'yup';
-import DynamicForm from './dynamic-form.component';
+import DynamicForm from '../dynamic-form.component';
 import { Box, Text, useToast } from '@chakra-ui/react';
-import { createCustomer, getSession } from '@/actions';
+import { createBranch, getSession } from '@/actions';
 
 
-const Customer = () => {
+const Branch = () => {
     // session state
     const [session, setSession] = useState({});
 
@@ -62,7 +62,7 @@ const Customer = () => {
                 },
               };
             try {
-                const response = await apiClient.get('/customer/schema/', requestOptions);
+                const response = await apiClient.get('/branch/schema/', requestOptions);
                 setSchema(response.data);
                 console.log(response.data)
               } catch (error) {
@@ -106,16 +106,18 @@ const Customer = () => {
     // define default values
     const defaultValues = {
         'name': "",
-        'country_code': "+90",
-        'phone_number': "",
-        'black_listed': false
+        'is_franchise': true,
+        'studio_extra_guest_price': 0,
+        'hotel_extra_guest_price': 0,
+        'outside_extra_guest_price': 0
     }
 
     const labelMapping = {
-        'Name': 'ADI-SOYADI',
-        'Country Code': 'ÜLKE KODU',
-        'Phone Number': 'TELEFON',
-        'Black Listed': 'KARA LİSTE',
+        'Name': 'ADI',
+        'Is Franchise': 'FRANCHISE',
+        'Studio Extra Guest Price': 'STÜDYO GELİN+',
+        'Hotel Extra Guest Price': 'OTEL GELİN+',
+        'Outside Extra Guest Price': 'ŞEHİRDIŞI GELİN+'
       };
      let updatedFormConfig = renameFormLabels(formConfig, labelMapping);
     
@@ -123,14 +125,13 @@ const Customer = () => {
     const onSubmit = async (data) => {
         
         // Handle form submission via server action
-        console.log(data)
-        const result = await createCustomer(data);
+        const result = await createBranch(data);
         if(result === 201){
             // show toaster
             //setShowToaster
             toast({
-                title: 'Müşteri Eklendi',
-                description: "Müşteriniz Eklendi.",
+                title: 'Şube Eklendi',
+                description: "Şubeniz Eklendi.",
                 status: 'success',
                 //duration: 9000,
                 isClosable: true,
@@ -140,6 +141,7 @@ const Customer = () => {
 
     return(
         <Box>
+             <Text>ŞUBE EKLE</Text>
             {/* check auth & render dynamic form */}
             {session  && session.authLevel >= 5 ? (
                    
@@ -155,4 +157,4 @@ const Customer = () => {
     );
 }
 
-export default Customer
+export default Branch

@@ -252,7 +252,7 @@ const CreateEvent = () => {
   let updatedFormConfig = alterFormConfigType(combinedFormConfig, keysToHidden, 'hidden');
 
   // found a bug on the pipeline, num_nail_arts was treated as foreign key.
-  const keysToNumber = ['num_nail_arts'];
+  const keysToNumber = ['num_nail_arts', 'plus'];
   updatedFormConfig = alterFormConfigType(updatedFormConfig, keysToNumber, 'number')
 
   // define default values
@@ -280,12 +280,13 @@ const CreateEvent = () => {
     "Country": 'ÜLKE',
     'City': 'ŞEHİR',
     'Hotel': 'OTEL',
-    'Num Nail Arts': 'NAILART'
+    'Num Nail Arts': 'NAILART',
+    'Plus': 'GELİN+',
   };
+  
   updatedFormConfig = renameFormLabels(updatedFormConfig, labelMapping);
 
   // fetch dropdown data
-
   const onSubmit = async (data) => {
     console.log(data);
   }
