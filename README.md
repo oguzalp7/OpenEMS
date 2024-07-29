@@ -40,7 +40,12 @@
     - ~~BODY~~
     - ~~FOOTER~~
 
+<<<<<<< HEAD
 * Implement forms for:
+=======
+* ~~Implement forms for:~~
+    - ~~customer~~
+>>>>>>> origin/gulberadev
     - ~~branch (ignore departments)~~
     - ~~departments~~
     - ~~employment_type~~
