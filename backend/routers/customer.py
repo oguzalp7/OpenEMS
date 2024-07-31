@@ -13,7 +13,7 @@ from .auth import get_current_user
 from .router_utils import check_privileges, delete_item, get_item_raw, get_items_raw, convert_result_to_dict
 import logging
 
-from schemas.customer import CustomerSchema, CustomerCreateSchema, CustomerCreSchema
+from schemas.customer import CustomerReadSchema, CustomerSchema, CustomerCreateSchema, CustomerCreSchema
 
 router = APIRouter(prefix='/customer', tags=['Customers'])
 
@@ -28,7 +28,7 @@ db_dependency = Annotated[Session, Depends(get_db)]
 user_dependency = Annotated[dict, Depends(get_current_user)]
 logger = logging.getLogger(__name__)
 
-@router.post("/", status_code=status.HTTP_201_CREATED, response_model=CustomerCreateSchema)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=CustomerReadSchema)
 async def create_customer(user: user_dependency, db: db_dependency, schema: CustomerCreateSchema): 
     """
     example: {
@@ -61,6 +61,13 @@ def get_customers(db: db_dependency, user: user_dependency, skip: int = 0, limit
 async def get_raw_customer(user: user_dependency, db: db_dependency, customer_id: int):
     check_privileges(user, 1)
     return get_item_raw(db=db, table=Customer, index=customer_id)
+
+@router.get("/get/")
+async def get_customer_by_phone(country_code: str, phone_number: str, db: db_dependency):
+    customer = db.query(Customer).filter(Customer.country_code == country_code, Customer.phone_number == phone_number).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    return customer
 
 @router.get('/', status_code=status.HTTP_200_OK)
 def get_processed_customers(user: user_dependency, db: db_dependency, cc: Optional[str] = Query(None), p: Optional[str] = Query(None), n: Optional[str] = Query(None), bl: Optional[bool] = Query(False), skip: int = 0, limit: int = 10):

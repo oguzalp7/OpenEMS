@@ -72,15 +72,17 @@ class DetailController:
                     process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
                 
         
-        plus_price = self.db.query(Branch.studio_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()[0]
-        
-        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+        plus_price = self.db.query(Branch.studio_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()
+        if plus_price is None:
+            raise HTTPException(status_code=404, detail='Fiyat Bulunamadı.')
+
+        self.details['remaining_payment'] = (int(self.details['plus']) * plus_price[0]) + int(process_price_query.price) - int(self.details['downpayment'])
 
         return self.details
 
     def process_studio_exceptionals(self):
         print('studio kina - dis cekim')
-        print(self.details)
+        
         # check customer history
         customer_query = self.db.query(Customer).filter(Customer.id == self.details['customer_id']).first()
 
@@ -109,9 +111,11 @@ class DetailController:
                     process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == bride_price_query.id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
 
         
-        plus_price = self.db.query(Branch.studio_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()[0]
-        
-        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+        plus_price = self.db.query(Branch.studio_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()
+        if plus_price is None:
+            raise HTTPException(status_code=404, detail='Fiyat Bulunamadı.')
+
+        self.details['remaining_payment'] = (int(self.details['plus']) * plus_price[0]) + int(process_price_query.price) - int(self.details['downpayment'])
 
         return self.details
         
@@ -122,9 +126,13 @@ class DetailController:
         process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
         
         # for the extra guests, query price from branch as hotel extra guest
-        plus_price = self.db.query(Branch.hotel_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()[0]
-        
-        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+       
+
+        plus_price = self.db.query(Branch.hotel_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()
+        if plus_price is None:
+            raise HTTPException(status_code=404, detail='Fiyat Bulunamadı.')
+
+        self.details['remaining_payment'] = (int(self.details['plus']) * plus_price[0]) + int(process_price_query.price) - int(self.details['downpayment'])
 
         return self.details
 
@@ -135,9 +143,12 @@ class DetailController:
         process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
 
         # for extra guests calculate the price from branch table, as outside extra guest
-        plus_price = self.db.query(Branch.outside_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()[0]
         
-        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+        plus_price = self.db.query(Branch.outside_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()
+        if plus_price is None:
+            raise HTTPException(status_code=404, detail='Fiyat Bulunamadı.')
+
+        self.details['remaining_payment'] = (int(self.details['plus']) * plus_price[0]) + int(process_price_query.price) - int(self.details['downpayment'])
 
         return self.details
         
@@ -150,7 +161,7 @@ class DetailController:
         # for extra guests calculate the price from branch table, as outside extra guest
         plus_price = 30000
 
-        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+        self.details['remaining_payment'] = (int(self.details['plus']) * plus_price) + int(process_price_query.price) - int(self.details['downpayment'])
 
         return self.details
 

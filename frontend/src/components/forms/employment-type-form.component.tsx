@@ -6,12 +6,12 @@ import { useEffect, useState } from 'react';
 import { generateFormConfig, alterFormConfigType, findFieldIndex, renameFormLabels } from '@/utils';
 
 import * as yup from 'yup';
-import DynamicForm from './dynamic-form.component';
+import DynamicForm from '../dynamic-form.component';
 import { Box, Text, useToast } from '@chakra-ui/react';
-import { createDepartment, getSession } from '@/actions';
+import { createEmploymentType, getSession } from '@/actions';
 
 
-const Department = () => {
+const EmploymentType = () => {
     // session state
     const [session, setSession] = useState({});
 
@@ -62,7 +62,7 @@ const Department = () => {
                 },
               };
             try {
-                const response = await apiClient.get('/departments/schema/', requestOptions);
+                const response = await apiClient.get('/employment-types/schema/', requestOptions);
                 setSchema(response.data);
               } catch (error) {
                 setError(error);
@@ -116,13 +116,13 @@ const Department = () => {
     const onSubmit = async (data) => {
         
         // Handle form submission via server action
-        const result = await createDepartment(data);
+        const result = await createEmploymentType(data);
         if(result === 201){
             // show toaster
             //setShowToaster
             toast({
-                title: 'Departman Eklendi',
-                description: "Departmanınız Eklendi.",
+                title: 'Çalışma Tipi Eklendi',
+                description: "Çalışma Tipiniz Eklendi.",
                 status: 'success',
                 //duration: 9000,
                 isClosable: true,
@@ -132,10 +132,9 @@ const Department = () => {
  
     return(
         <Box>
-             <Text>DEPARTMAN EKLE</Text>
+             <Text>ÇALIŞMA TİPİ EKLE</Text>
             {/* check auth & render dynamic form */}
             {session  && session.authLevel >= 5 ? (
-                   
                     <DynamicForm schema={validationSchema} formConfig={updatedFormConfig} onSubmit={onSubmit} defaultValues={defaultValues}/>
                 ): (
                     <Box>
@@ -148,4 +147,4 @@ const Department = () => {
     );
 }
 
-export default Department
+export default EmploymentType

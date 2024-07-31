@@ -49,7 +49,7 @@ def create_branch(db: db_dependency, user: user_dependency, schema: BranchSchema
     logger.info(f"Branch {branch.name} created by user {user.get('id')}")
     return branch
 
-@router.get("/", status_code=status.HTTP_200_OK, response_model=List[BranchFetchSchema])
+@router.get("/", status_code=status.HTTP_200_OK, response_model=List[BranchReadSchema])
 def read_branches(db: db_dependency, user: user_dependency, skip: int = 0, limit: int = 10):
     check_privileges(user, 1)
     return db.query(Branch).offset(skip).limit(limit).all()

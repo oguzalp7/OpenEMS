@@ -15,3 +15,7 @@ class CustomerCreSchema(BaseModel):
     country_code: str = Field(default='+90')
     phone_number: str = Field(min_length=0, max_length=13)
     black_listed: bool = Field(default=False)
+
+
+class CustomerReadSchema(CustomerCreateSchema):
+    id: int

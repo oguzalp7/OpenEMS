@@ -1,5 +1,5 @@
 import React from 'react'
-import LogoutForm from '@/components/logout-form.component'
+import LogoutForm from '@/components/forms/logout-form.component'
 
 
 const Logout = async () => {

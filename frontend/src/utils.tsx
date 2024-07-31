@@ -189,3 +189,15 @@ export const renameFormLabels = (formConfig, labelMapping) => {
     return field;
   });
 };
+
+export const updateFieldOptions = (formConfig, fieldName, options) => {
+  return formConfig.map(field => {
+    if (field.name === fieldName) {
+      return {
+        ...field,
+        options: options
+      };
+    }
+    return field;
+  });
+};

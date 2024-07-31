@@ -10,7 +10,7 @@ import {
   Input,
   InputRightAddon,
   Button,
-  VStack
+  VStack, Text
 } from '@chakra-ui/react'
 
 import ChakraDropdown from "@/components/dropdown.component";
@@ -19,64 +19,65 @@ import ChakraModal from "@/components/modal.component";
 import DynamicForm from "@/components/dynamic-form.component";
 
 import * as yup from 'yup';
-import Branch from "@/components/branch-form.component";
-import Department from "@/components/department-form.component";
-import PaymentType from "@/components/payment-type-form.component";
-import EmploymentType from "@/components/employment-type-form.component";
-import Process from "@/components/process-form.component";
+import Branch from "@/components/forms/branch-form.component";
+import Department from "@/components/forms/department-form.component";
+import PaymentType from "@/components/forms/payment-type-form.component";
+import EmploymentType from "@/components/forms/employment-type-form.component";
+import Process from "@/components/forms/process-form.component";
+import EventForm from "@/components/forms/event.form.component";
 
-const CustomInput = () => {
+import { Box, Switch, useColorMode } from '@chakra-ui/react';
 
-  const options = [
-    {
-      id: 1,
-      name: "NAKİT"
-    },
-    {
-      id: 2,
-      name: "VISA"
-    }
-  ]
 
+
+const useToggleSwitch = (initialState = false) => {
+  const [isOn, setIsOn] = useState(initialState);
+
+  const toggleSwitch = () => setIsOn(!isOn);
+
+  return [isOn, toggleSwitch];
+};
+
+const NeonToggleSwitch = ({ isOn, toggleSwitch }) => {
   return (
-    <Stack spacing={4}>
-      <InputGroup>
-        <InputLeftAddon><Input variant='unstyled' type='text' placeholder='Country Code' value={'+90'}/></InputLeftAddon>
-        <Input type='tel' placeholder='phone number' />
-      </InputGroup>
-
-      {/* If you add the size prop to `InputGroup`, it'll pass it to all its children. */}
-      <InputGroup size='sm'>
-        {/* <InputLeftAddon>https://</InputLeftAddon> */}
-        <Input type="number" placeholder='Miktar' />
-        <InputRightAddon><ChakraDropdown options={options} label={'Ödeme Tipi'} initialValue={''} value={""} /></InputRightAddon>
-      </InputGroup>
-    </Stack>
+    <Box position="relative" display="inline-block" width="4em" height="2em" onClick={toggleSwitch}>
+      <Box
+        position="absolute"
+        top="0.5em"
+        left="0.5em"
+        width={["4em", "5em"]}//"4em"
+        height={["2em", "2.2em"]} //"2em"
+        overflow="hidden"
+        borderRadius="1em"
+        bg={isOn ? 'gray.900' : 'gray.900'}
+        boxShadow={isOn ? '0 0 10px rgba(0, 255, 0, 0.5)' : '0 0 10px rgba(255, 0, 0, 0.5)'}
+        cursor="pointer"
+        transition="all 0.3s"
+      >
+        
+        <Box
+          position="absolute"
+          top="50%"
+          left={isOn ? 'calc(100% - 2em)' : '0.5em'}
+          transform="translateY(-50%)"
+          width={["1.5em", "1.8em"]} //"1.5em"
+          height={["1.5em", "1.8em"]}//"1.5em"
+          borderRadius="50%"
+          bg={isOn ? 'rgba(0, 255, 0, 0.5)': 'rgba(255, 0, 0, 0.7)'}
+          boxShadow={isOn ? '0 0 5px rgba(0, 255, 0, 0.7)' : '0 0 5px rgba(255, 0, 0, 0.7)'}
+          transition="all 0.3s"
+        />
+      </Box>
+    </Box>
   );
-}
+};
 
 
 const  Home = () =>  {
   const router = useRouter()
   const [session, setSession] = useState({})
 
-  const [formConfig, setFormConfig] = useState([]);
-
-  const schema = yup.object().shape({
-    name: yup.string().required('Name is required'),
-    email: yup.string().email('Invalid email').required('Email is required'),
-    password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
-  });
-
-  useEffect(() => {
-    setFormConfig([
-      { type: 'text', name: 'name', label: 'Name' },
-      { type: 'email', name: 'email', label: 'Email' },
-      { type: 'date', name: 'date', label: 'Date' },
-      { type: 'select', name: 'department', label: 'Department', options: [{ id: 1, name: 'HR' }, { id: 2, name: 'Engineering' }] },
-      // Add more fields based on rowData if needed
-    ]);
-  },[])
+  
   
   useEffect(() => {
     const getSessionInfo = async () => {
@@ -93,39 +94,21 @@ const  Home = () =>  {
   }, [session])
 
 
-  // temporary add
-  const handleSave = () => {
-    console.log("Save clicked");
-  };
-
-  const handleAnotherAction = () => {
-    console.log("Another action clicked");
-  };
-
-  const buttons = [
-    { colorScheme: "blue", onClick: handleSave, text: "KAYDET" },
-    { colorScheme: "green", onClick: handleAnotherAction, text: "ANOTHER ACTION" },
-  ];
-
-  const handleFormSubmit = (formData) => {
-    console.log(formData);
-    // Perform your API call here
-  };
-
+  
+  //const [isOn, toggleSwitch] = useToggleSwitch();
+  
 
   return (
     <>
     {/* <ChakraModal buttons={buttons}>
         <CustomInput/>
     </ChakraModal> */}
-    <VStack>
-    <DynamicForm schema={schema} formConfig={formConfig} onSubmit={handleFormSubmit} />
-    <Branch/>
-    <Department/>
-    <EmploymentType/>
-    <PaymentType/>
-    <Process/>
-    </VStack>
+    
+      <EventForm/>
+      
+        {/* <NeonToggleSwitch isOn={isOn} toggleSwitch={toggleSwitch} /> */}
+      
+    
     </>
   );
 }

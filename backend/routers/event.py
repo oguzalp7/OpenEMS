@@ -117,6 +117,7 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     
     
     details = schema.details
+    # print(details)
     # validate details
     try:
         # Validate and create an instance of the dynamic model
@@ -125,7 +126,7 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
         print(e)
         raise HTTPException(status_code=400, detail='İşlem onaylanmadı. Validasyon Hatası.')
     
-    print(model_instance.model_dump())
+    
     
     #print(model_instance.model_dump())
     details = process_details(db=db, process_id=schema.process_id, details=details, schema=schema)

@@ -6,7 +6,7 @@ import { apiClient } from '@/apiClient';
 import ChakraDataTable from '@/components/data-table.component';
 import Loading from '@/components/loading.component';
 import ChakraModal from '@/components/modal.component';
-import Customer from '@/components/customer-form.component';
+import Customer from '@/components/forms/customer-form.component';
 import { fetchData, validateAndCombineContact } from '@/utils';
 import { Button, Checkbox, Input, InputGroup, InputLeftAddon, Select, Stack, VStack } from '@chakra-ui/react';
 import React, { useEffect, useState } from 'react'

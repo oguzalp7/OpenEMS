@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { generateFormConfig, alterFormConfigType, findFieldIndex, renameFormLabels } from '@/utils';
 
 import * as yup from 'yup';
-import DynamicForm from './dynamic-form.component';
+import DynamicForm from '../dynamic-form.component';
 import { Box, Text, useToast } from '@chakra-ui/react';
 import { createCustomer, getSession } from '@/actions';
 

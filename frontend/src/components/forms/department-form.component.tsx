@@ -6,12 +6,12 @@ import { useEffect, useState } from 'react';
 import { generateFormConfig, alterFormConfigType, findFieldIndex, renameFormLabels } from '@/utils';
 
 import * as yup from 'yup';
-import DynamicForm from './dynamic-form.component';
+import DynamicForm from '../dynamic-form.component';
 import { Box, Text, useToast } from '@chakra-ui/react';
-import { createProcess, getSession } from '@/actions';
+import { createDepartment, getSession } from '@/actions';
 
 
-const Process = () => {
+const Department = () => {
     // session state
     const [session, setSession] = useState({});
 
@@ -22,12 +22,6 @@ const Process = () => {
 
     const [validationSchema, setValidationSchema] = useState(yup.object().shape({}));
     const [formConfig, setFormConfig] = useState([]);
-
-    // useState hooks for the dropdown selection options
-    const [auths, setAuths] = useState([]);
-    const [branches, setBranches] = useState([]);
-    const [departments, setDepartments] = useState([]);
-    const [employmentTypes, setEmploymentTypes] = useState([]);
 
     // requestOptions hook for authenticated api calls
     const [requestOptions, setRequestOptions] = useState({})
@@ -57,34 +51,18 @@ const Process = () => {
     }, [session, session.token])
     // ------------------------------------------------------------------------------------------------------------------------------------------------
 
-    // fetch dropdown options
-    
-    useEffect(() => {
-        const fetchDepartments = async () => {
-            try {
-                const response = await apiClient.get('/departments/?skip=0&limit=50', requestOptions);
-                setDepartments(response.data);
-            } catch (error) {
-                console.error('Error fetching branches:', error);
-                setDepartments([])
-            }
-        }
-        fetchDepartments();
-    }, [session,  session.token, requestOptions]);
-    
-    // ------------------------------------------------------------------------------------------------------------------------------------------------
-    
-
     // fetch schema
     useEffect(() => {   
         const fetchSchema = async () => {
+            const session = await getSession();
             const requestOptions = {
                 headers: {
                   "Content-Type": "application/json",
+                   Authorization: `Bearer ${session.token}`,
                 },
               };
             try {
-                const response = await apiClient.get('/processes/schema/', requestOptions);
+                const response = await apiClient.get('/departments/schema/', requestOptions);
                 setSchema(response.data);
               } catch (error) {
                 setError(error);
@@ -127,49 +105,36 @@ const Process = () => {
     // define default values
     const defaultValues = {
         'name': "",
-        'duration': 0
     }
-
-    // load dropdown options
-    useEffect(() => {
-        const departmentDropdownIndex = findFieldIndex(formConfig, 'select', 'department_id');
-        //console.log(updatedFormConfig[branchDropdownIndex])
-        if(formConfig && formConfig[departmentDropdownIndex] && formConfig[departmentDropdownIndex].options){
-            if(typeof(formConfig[departmentDropdownIndex].options) === typeof(departments)){
-                formConfig[departmentDropdownIndex].options = departments;
-            }
-        }
-    }, [departments]);
 
     const labelMapping = {
         'Name': 'ADI',
-        'Duration': 'SÜRE',
       };
-    let updatedFormConfig = renameFormLabels(formConfig, labelMapping);
+     let updatedFormConfig = renameFormLabels(formConfig, labelMapping);
     
     // ------------------------------------------------------------------------------------------------------------------------------------------------
     const onSubmit = async (data) => {
         
         // Handle form submission via server action
-        const result = await createUserEmployee(data);
+        const result = await createDepartment(data);
         if(result === 201){
             // show toaster
             //setShowToaster
             toast({
-                title: 'İşlem Eklendi',
-                description: "İşleminiz Eklendi.",
+                title: 'Departman Eklendi',
+                description: "Departmanınız Eklendi.",
                 status: 'success',
                 //duration: 9000,
                 isClosable: true,
             })
         }
     };
-    
+ 
     return(
         <Box>
-             <Text>İŞLEM EKLE</Text>
+             <Text>DEPARTMAN EKLE</Text>
             {/* check auth & render dynamic form */}
-            {session && session.authLevel >= 5 ? (
+            {session  && session.authLevel >= 5 ? (
                    
                     <DynamicForm schema={validationSchema} formConfig={updatedFormConfig} onSubmit={onSubmit} defaultValues={defaultValues}/>
                 ): (
@@ -183,4 +148,4 @@ const Process = () => {
     );
 }
 
-export default Process
+export default Department

@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { generateFormConfig, alterFormConfigType, findFieldIndex, renameFormLabels } from '@/utils';
 
 import * as yup from 'yup';
-import DynamicForm from './dynamic-form.component';
+import DynamicForm from '../dynamic-form.component';
 import { Box, Text, useToast } from '@chakra-ui/react';
 import { createUserEmployee, getSession } from '@/actions';
 
@@ -251,7 +251,7 @@ const UserEmployee = () => {
             //setShowToaster
             toast({
                 title: 'Kullanıcı Eklendi',
-                description: "We've created your account for you.",
+                //description: "We've created your account for you.",
                 status: 'success',
                 //duration: 9000,
                 isClosable: true,
