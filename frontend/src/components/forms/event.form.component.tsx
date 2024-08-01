@@ -5,12 +5,13 @@ import { getSession } from '@/actions'
 import ChakraDropdown from '../dropdown.component'
 import { apiClient } from '@/apiClient'
 import Loading from '../loading.component'
-import { Box, HStack, VStack, Text, InputGroup, Input, InputLeftAddon, FormLabel, Button } from '@chakra-ui/react'
+import { Box, HStack, VStack, Text, InputGroup, Input, InputLeftAddon, FormLabel, Button, useToast } from '@chakra-ui/react'
 import * as yup from 'yup';
-import { generateFormConfig, findFieldIndex, updateFieldOptions, alterFormConfigType } from '@/utils'
+import { generateFormConfig, findFieldIndex, updateFieldOptions, alterFormConfigType, renameFormLabels, reorderFormConfig } from '@/utils'
 import AdvancedDynamicForm from '../advanced-dynamic-form.component'
 import useToggleSwitch from '@/hooks/useToggleSwitch'
 import NeonToggleSwitch from '../neon-switch.component'
+
 
 const EventForm = () => {
     // session state
@@ -20,6 +21,7 @@ const EventForm = () => {
     const [requestOptions, setRequestOptions] = useState({});
 
     const [isOn, toggleSwitch] = useToggleSwitch();
+    const toast = useToast();
 
     // for higher level auth users
     const [showBranchDropdown, setShowBranchDropdown] = useState(false);
@@ -128,6 +130,7 @@ const EventForm = () => {
                 date: new Date().toISOString().split('T')[0],
                 time: time,
                 details: '{}',
+                remaining_payment: 0
             })
         }
         
@@ -185,7 +188,7 @@ const EventForm = () => {
                     time: time,
                     details: '{}',
                     plus: "0",
-                    remaining_payment: "0"
+                    remaining_payment: 0
                 })
             }
         }
@@ -201,7 +204,9 @@ const EventForm = () => {
                 time: time,
                 details: '{}',
                 plus: "0",
-                customer_id: customerId
+                customer_id: customerId,
+                remaining_payment: 0,
+                num_nail_arts: 0
             }
         )
 
@@ -428,6 +433,59 @@ const EventForm = () => {
     const keysToNumber = ['num_nail_arts', 'plus'];
     updatedFormConfig = alterFormConfigType(updatedFormConfig, keysToNumber, 'number');
 
+    // make renaming
+    const labelMapping = {
+        'Date': 'TARİH*',
+        'Time': 'SAAT*',
+        'Description': 'AÇIKLAMA',
+        'Is Tst': 'TST',
+        'Downpayment': 'KAPORA*',
+        'Plus': 'GELİN+',
+        'Remaining Payment': 'BAKİYE',
+        'Country': 'ÜLKE',
+        'City': 'ŞEHİR',
+        'Hotel': 'OTEL',
+        'Num Nail Arts': 'NAİLART+'
+    }
+    updatedFormConfig = renameFormLabels(updatedFormConfig, labelMapping);
+    
+    if(selectedDepartment === '1' || selectedDepartment === '2'){
+        const order = [
+            "date",
+            "time",
+            "process_id",
+            "plus",
+            "is_tst",
+            "employee_id",
+            "optional_makeup_id",
+            "hair_stylist_id",
+            "downpayment",
+            "payment_type_id",
+            "description",
+            "remaining_payment",
+            "hotel",
+            "city",
+            "country",
+            "branch_id",
+            "customer_id",
+            "status",
+            "details",
+        ]
+        // re-order form inputs
+        updatedFormConfig = reorderFormConfig(updatedFormConfig, order);
+    }else if(selectedDepartment === '3') {
+        const order = [
+            "date",
+            "time",
+            "process_id",
+            "num_nail_arts",
+            "employee_id",
+            "description",
+            "remaining_payment",
+        ]
+        console.log(detailsValidationSchema._nodes)
+        updatedFormConfig = reorderFormConfig(updatedFormConfig, order);
+    }
     
     
     useEffect(() => {
@@ -469,15 +527,6 @@ const EventForm = () => {
             try {
                 const response = await apiClient.post('/customer/', data, requestOptions);
                 if(response.status == 201 || response.status === 200 && !customerId){
-                    // const encodedCountryCode = encodeURIComponent(countryCode);
-                    // const response = await apiClient.get(`/customer/get/?country_code=${encodedCountryCode}&phone_number=${customerPhone}`, requestOptions);
-                    // setCustomerName(response.data.name);
-                    // setCustomerId(response.data.id);
-                    // setInsertCustomer(false);
-                    // setCustomerId(response.data.id);
-                    // console.log('insert customer response: ', response.data)
-                    // formData['customer_id'] = response.data.id;
-                    // console.log('insert custoemr: ', formData)
                     return response.data.id;
                 }
             } catch (error) {
@@ -511,10 +560,19 @@ const EventForm = () => {
         // Set the details object in the filtered form data
         filteredFormData.details = details;
 
-        console.log('Submitted data:', filteredFormData);
+        //console.log('Submitted data:', filteredFormData);
         try {
             const response = await apiClient.post('/event', filteredFormData, requestOptions);
-            console.log('Event created:', response.data);
+            //console.log('Event created:', response.data);
+            if(response && (response.status === 200 || response.status === 201)){
+                toast({
+                    title: 'Randevu Başarıyla Oluşturuldu.',
+                    //description: "We've created your account for you.",
+                    status: 'success',
+                    //duration: 9000,
+                    isClosable: true,
+                })
+            }
             if(!isOn){
                 resetForm();
             }
@@ -549,6 +607,7 @@ const EventForm = () => {
                 is_tst: false,
                 payment_type_id: '',
                 downpayment: 0,
+                remaining_payment: 0
             }
         )
     }

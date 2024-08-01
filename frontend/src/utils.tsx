@@ -201,3 +201,18 @@ export const updateFieldOptions = (formConfig, fieldName, options) => {
     return field;
   });
 };
+
+
+export const reorderFormConfig = (formConfig, order) => {
+  const orderMap = new Map(order.map((name, index) => [name, index]));
+
+  return formConfig.sort((a, b) => {
+      const indexA = orderMap.get(a.name);
+      const indexB = orderMap.get(b.name);
+
+      if (indexA === undefined) return 1;
+      if (indexB === undefined) return -1;
+
+      return indexA - indexB;
+  });
+};

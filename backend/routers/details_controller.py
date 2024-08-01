@@ -35,9 +35,12 @@ class DetailController:
         print('default studio')
         # query data from Process Price tables and make calculations
         process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
-        plus_price = self.db.query(Branch.studio_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()[0]
         
-        self.details['remaining_payment'] = (self.details['plus'] * plus_price) + process_price_query.price - self.details['downpayment']
+        plus_price = self.db.query(Branch.studio_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()
+        if plus_price is None:
+            raise HTTPException(status_code=404, detail='Fiyat Bulunamadı.')
+
+        self.details['remaining_payment'] = (int(self.details['plus']) * plus_price[0]) + int(process_price_query.price) - int(self.details['downpayment'])
 
         return self.details
         
@@ -82,7 +85,7 @@ class DetailController:
 
     def process_studio_exceptionals(self):
         print('studio kina - dis cekim')
-        
+
         # check customer history
         customer_query = self.db.query(Customer).filter(Customer.id == self.details['customer_id']).first()
 
@@ -178,7 +181,7 @@ class DetailController:
         num_nail_arts = self.details['num_nail_arts']
         nail_art_price_query = self.db.query(ProcessPrice.price).join(Process, Process.id == ProcessPrice.process_id).filter(Process.name == "NAIL-ART").filter(ProcessPrice.employee_id == self.schema.employee_id).first()
         print(nail_art_price_query)
-        self.details['remaining_payment'] = (num_nail_arts * nail_art_price_query[0]) + process_price_query.price
+        self.details['remaining_payment'] = (int(num_nail_arts) * nail_art_price_query[0]) + process_price_query.price
 
         return self.details
     
