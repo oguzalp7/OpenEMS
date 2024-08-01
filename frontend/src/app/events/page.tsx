@@ -9,8 +9,9 @@ import ChakraDataTable from '../../components/data-table.component';
 import DatePicker from '@/components/date-picker.component';
 import { convertDateToTimestamp, reorderColumns, validateAndCombineContact, renameColumn, formatTime, hideKeysInArrayOfObjects, removeKeysFromArrayOfObjects } from '@/utils';
 import Loading from '@/components/loading.component';
-import { Button, HStack, Stack, VStack } from '@chakra-ui/react';
+import { Button, HStack, Stack, VStack, useToast } from '@chakra-ui/react';
 import ChakraModal from '@/components/modal.component';
+import UpdateEventForm from '@/components/forms/event-update.form.component';
 
 const Events = () => {
 
@@ -23,7 +24,7 @@ const Events = () => {
     }
     fetchSessionInfo();
   }, [])
-
+  const toast = useToast();
   
   // dropdown configuration
   const [departments, setDepartments] = useState([]);
@@ -329,7 +330,7 @@ const Events = () => {
     }
 
     fetchData();
-  }, [url])
+  }, [url, isModalOpen, modalContent])
   
   const resetFilters = () => {
     setSelectedBranch("")
@@ -363,7 +364,7 @@ const Events = () => {
         if(recordId){
           const response = await apiClient.get(`/event/${recordId}`, requestOptions);
           setModalContent(response.data)
-          setRecordId('')
+          //setRecordId('')
         }
       }catch(error){
         console.error('Error fetching record:', error);
@@ -384,7 +385,6 @@ const Events = () => {
     };
     const originalRowData = originalData.find((data) => data.SIRA === rowData.SIRA);
     //const response = await apiClient.delete(`/event/${originalRowData.id}`, requestOptions)
-    console.log(originalRowData)
   }
   
   // define buttons
@@ -419,15 +419,45 @@ const Events = () => {
     },
   ];
 
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalContent(null);
+  };
+
+  const handleSubmit = async (formData) => {
+    console.log('Form submitted hello world', formData);
+    const session = await getSession();
+
+    const requestOptions = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.token}`,
+      }
+    }
+    try {
+      const response = await apiClient.put(`/event/${recordId}`, formData, requestOptions);
+      if(response && (response.status === 200 || response.status === 201)){
+        handleCloseModal();
+        toast({
+            title: 'Randevu Başarıyla Güncellendi.',
+            //description: `Kalan bakiye: ${response.data.details.remaining_payment}`,
+            status: 'success',
+            //duration: 9000,
+            isClosable: true,
+        })
+    }
+    } catch (error) {
+      alert('Randevu güncellenemedi.')
+    }
+  }
+
   const actionButtons = [
+    
     {
-      label: 'KAYDET',
-      colorScheme: 'blue',
-      onClick: () => {
-        console.log('Form submitted');
-        setIsModalOpen(false);
-      },
-    },
+      label: "VAZGEÇ",
+      colorScheme: "red",
+      onClick: handleCloseModal,
+  },
   ];
 
   //console.log(isModalOpen)
@@ -493,14 +523,15 @@ const Events = () => {
       ):(
         <Loading/>
       )}
-      {isModalOpen && (
-        <ChakraModal 
-          onClose={() => setIsModalOpen(false)} 
-          contentButtons={contentButtons} 
+      {isModalOpen && modalContent && recordId && (
+        <ChakraModal
+          isClosed={!isModalOpen}
+          contentButtons={contentButtons}
           actionButtons={actionButtons}
+          onClose={handleCloseModal}
         >
-          {/* Render the modal content here */}
-          <pre>{JSON.stringify(modalContent, null, 2)}</pre>
+          <UpdateEventForm onSubmit={handleSubmit} defaultValues={modalContent} eventId={recordId} />
+          {/* <pre>{JSON.stringify(modalContent, null, 2)}</pre> */}
         </ChakraModal>
       )}
     </VStack>

@@ -216,3 +216,27 @@ export const reorderFormConfig = (formConfig, order) => {
       return indexA - indexB;
   });
 };
+
+/**
+ * Check if a field with the given name exists in the formConfig
+ * @param {Array} formConfig - The configuration array of the form
+ * @param {string} name - The name of the field to check
+ * @return {boolean} - True if the field exists, false otherwise
+ */
+export const fieldExistsInFormConfig = (formConfig, name) => {
+  return formConfig.some(field => field.name === name);
+};
+
+
+export const flattenDefaultValues = (defaultValues) => {
+  const flattenedValues = { ...defaultValues };
+  
+  if (defaultValues.details) {
+    Object.keys(defaultValues.details).forEach(key => {
+      flattenedValues[key] = defaultValues.details[key];
+    });
+    delete flattenedValues.details;
+  }
+
+  return flattenedValues;
+};

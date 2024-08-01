@@ -34,6 +34,34 @@ logger = logging.getLogger(__name__)
 async def get_schema_base():
     return EventCreateSchema.schema()
 
+@router.get("/schema/event/{event_id}", response_model=Dict[str, Any])
+async def get_event_schema_by_id(event_id: int, db: Session = Depends(get_db)):
+    event = db.query(Event).filter(Event.id == event_id).first()
+    if event is None:
+        raise HTTPException(status_code=404, detail="Event not found")
+
+    process_id = event.process_id
+    department_id = db.query(Process.department_id).filter(Process.id == process_id).first()
+    if department_id is None:
+        raise HTTPException(status_code=404, detail="Departman Bulunamadı.")
+    
+
+    # Fetch the base schema
+    base_schema = EventCreateSchema.schema()
+
+    # Fetch the details schema based on process_id
+    process_query = db.query(Process.attributes).filter(Process.id == process_id).first()
+    if process_query is None:
+        raise HTTPException(status_code=404, detail='Process not found')
+    
+    attributes = process_query[0]
+    DynamicSchema = create_dynamic_model("AttributeSchema", attributes=attributes)
+    details_schema = DynamicSchema.schema()
+
+    return {
+        "base_schema": base_schema,
+        "details_schema": details_schema,
+    }
 
 @router.get('/schema/details/{dep}', response_model=Dict[str, Any])
 async def get_schema_details(db: db_dependency, dep: int):
@@ -48,6 +76,36 @@ async def get_schema_details(db: db_dependency, dep: int):
     dynamic_schema = DynamicSchema.schema()
     
     return dynamic_schema
+
+@router.post("/rp/", status_code=status.HTTP_201_CREATED) #, response_model=EventCreateSchema)
+async def get_remaining_payment(user: user_dependency, db: db_dependency, schema: EventCreateSchema):
+    
+    check_privileges(user, 5)
+    # check process_id
+    process_query = db.query(Process.attributes).filter(Process.id == schema.process_id).first()
+    if process_query is None:
+        raise HTTPException(status_code=404, detail='İçerik bulunamadı.')
+    
+    attributes = process_query[0]
+    
+    DynamicSchema = create_dynamic_model("AttributeSchema", attributes=attributes)
+    
+    
+    details = schema.details
+    # print(details)
+    # validate details
+    try:
+        # Validate and create an instance of the dynamic model
+        model_instance = DynamicSchema(**details)
+    except ValidationError as e:
+        print(e)
+        raise HTTPException(status_code=400, detail='İşlem onaylanmadı. Validasyon Hatası.')
+    
+    
+    #print(model_instance.model_dump())
+    details = process_details(db=db, process_id=schema.process_id, details=details, schema=schema)
+    
+    return details
 
 @router.post("/", status_code=status.HTTP_201_CREATED) #, response_model=EventCreateSchema)
 async def create_event(user: user_dependency, db: db_dependency, schema: EventCreateSchema):

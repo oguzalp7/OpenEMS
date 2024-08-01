@@ -264,6 +264,15 @@ async def get_raw_process(user: user_dependency, db: db_dependency, process_id: 
     check_privileges(user, 1)
     return get_item_raw(db=db, table=Process, index=process_id)
 
+@router.get('/dep/{process_id}', status_code=status.HTTP_200_OK)
+async def get_department(user: user_dependency, db: db_dependency, process_id: int):
+    check_privileges(user, 2)
+    result = db.query(Process.department_id).filter(Process.id == process_id).first()
+    if result is None: 
+        raise HTTPException(status_code=404, detail='Departman Bulunamadı.')
+    
+    return result[0]
+
 @router.get('/', status_code=status.HTTP_200_OK)
 def get_processed_processes(user: user_dependency, db: db_dependency, dep: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
     """

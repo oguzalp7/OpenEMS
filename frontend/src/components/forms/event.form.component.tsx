@@ -56,6 +56,8 @@ const EventForm = () => {
     const [customerName, setCustomerName] = useState('');
     const [customerId, setCustomerId] = useState('');
     const [insertCustomer, setInsertCustomer] = useState(false);
+
+    const [remainingPayment, setRemainingPayment] = useState(0);
     
 
     
@@ -303,17 +305,17 @@ const EventForm = () => {
     // fetch details schema
     useEffect(() => {
         const fetchDetailsSchema = async () => {
-        const requestOptions = {
-            headers: {
-            "Content-Type": "application/json",
-            },
-        };
-        try {
-            const response = await apiClient.get(`/event/schema/details/${selectedDepartment}`, requestOptions);
-            setDetailsSchema(response.data);
-        } catch (err) {
-            setDetailsSchema(null);
-        }
+            const requestOptions = {
+                headers: {
+                "Content-Type": "application/json",
+                },
+            };
+            try {
+                const response = await apiClient.get(`/event/schema/details/${selectedDepartment}`, requestOptions);
+                setDetailsSchema(response.data);
+            } catch (err) {
+                setDetailsSchema(null);
+            }
         };
         fetchDetailsSchema();
     }, [selectedDepartment]);
@@ -433,6 +435,9 @@ const EventForm = () => {
     const keysToNumber = ['num_nail_arts', 'plus'];
     updatedFormConfig = alterFormConfigType(updatedFormConfig, keysToNumber, 'number');
 
+    const keysToTime = ['time'];
+    updatedFormConfig = alterFormConfigType(updatedFormConfig, keysToTime, 'time');
+
     // make renaming
     const labelMapping = {
         'Date': 'TARİH*',
@@ -483,7 +488,7 @@ const EventForm = () => {
             "description",
             "remaining_payment",
         ]
-        console.log(detailsValidationSchema._nodes)
+        //console.log(detailsValidationSchema._nodes)
         updatedFormConfig = reorderFormConfig(updatedFormConfig, order);
     }
     
@@ -496,12 +501,12 @@ const EventForm = () => {
                 setCustomerName(response.data.name);
                 setCustomerId(response.data.id);
                 setInsertCustomer(false);
-                setFetchCustomer(false)
+                
               } catch (error) {
                 if (error.response && error.response.status === 404) {
                   console.log('Customer not found, ready to add a new one.');
                   setInsertCustomer(true);
-                  setFetchCustomer(false);
+                  
                 } else {
                   console.error('Error querying customer:', error);
                 }
@@ -560,14 +565,14 @@ const EventForm = () => {
         // Set the details object in the filtered form data
         filteredFormData.details = details;
 
-        //console.log('Submitted data:', filteredFormData);
+        
         try {
             const response = await apiClient.post('/event', filteredFormData, requestOptions);
             //console.log('Event created:', response.data);
             if(response && (response.status === 200 || response.status === 201)){
                 toast({
                     title: 'Randevu Başarıyla Oluşturuldu.',
-                    //description: "We've created your account for you.",
+                    description: `Kalan bakiye: ${response.data.details.remaining_payment}`,
                     status: 'success',
                     //duration: 9000,
                     isClosable: true,
@@ -578,11 +583,36 @@ const EventForm = () => {
             }
         } catch (error) {
             console.error('Error creating event:', error);
+            console.log(error.response.data.detail);
+            toast({
+                title: 'Randevu Oluşturulamadı.',
+                description: JSON.stringify(error.response.data.detail, null, 2),
+                status: 'error',
+                //duration: 9000,
+                isClosable: true,
+            })
         }
     }
 
-    const handleFormChange = (formData) => {
-        console.log('FormData: ', formData)
+    const handleFormChange = async (formData) => {
+        // const fetchRemainingPayment = async () => {
+        //     try {
+        //         const response = await apiClient.post('/event/rp/', formData, requestOptions);
+        //         setRemainingPayment(response.data.remaining_payment);
+        //     } catch (error) {   
+        //         console.error(error.response.data.detail)
+        //     }
+        // }
+        // //console.log('FormData: ', remainingPayment)
+        // if(formData.branch_id && formData.customer_id && formData.process_id && formData.employee_id){
+        //     fetchRemainingPayment();
+        //     if(formData.downpayment || formData.plus){
+        //         fetchRemainingPayment();
+        //     }
+        //     formData.remaining_payment = remainingPayment;
+        // }
+        // console.log(formData);
+        // console.log(remainingPayment)
     }
     
     const resetForm = () => {
