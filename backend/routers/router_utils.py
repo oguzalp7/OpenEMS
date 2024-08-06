@@ -196,3 +196,16 @@ name_mapping = {
     'hotel': 'OTEL',
 
 }
+
+def remove_item_by_name(processes, name_to_remove):
+    """
+    Remove the item from the list of processes where the second index matches the provided name.
+
+    Args:
+    processes (list of tuples): List of processes as (id, name).
+    name_to_remove (str): The name of the process to remove.
+
+    Returns:
+    list of tuples: Updated list of processes with the specified process removed.
+    """
+    return [process for process in processes if process[1] != name_to_remove]

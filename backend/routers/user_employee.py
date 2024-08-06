@@ -2,15 +2,16 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import Annotated, Any, Dict
 
-from models import User, Employee
+from models import User, Employee, Process, ProcessPrice
 from database import SessionLocal
 from starlette import status
 
 from .auth import get_current_user
-from .router_utils import check_privileges
+from .router_utils import check_privileges, remove_item_by_name
 import logging
 
 from schemas.user_employee import UserEmployeeCreateSchema
+from schemas.process_price import ProcessPriceSchema
 from passlib.context import CryptContext
 
 router = APIRouter(prefix='/user-employee', tags=['UserEmployee'])
@@ -64,6 +65,36 @@ def create_user_employee(user: user_dependency, db: db_dependency, schema: UserE
     db.add(user_data)
     db.commit()
     db.refresh(user_data)
+
+    # initialize the process prices 0
+    current_employee_id = employee_data.id
+    current_department_id = employee_data.department_id
+
+    if current_department_id in [1, 2, 3]:
+        processes = db.query(Process.id, Process.name).filter(Process.department_id == current_department_id).all()
+
+        if processes is None:
+            pass
+        
+        if current_department_id == 1:
+            processes = remove_item_by_name(processes, 'GELİN+')
+
+        processes = [process[0] for process in processes]
+        
+        entries = []
+        for process_id in processes:
+            schema_ = ProcessPriceSchema(
+                    employee_id=current_employee_id,
+                    process_id=process_id,
+                    price=0
+                )
+            process_price_data = ProcessPrice(**schema_.model_dump(), added_by=user.get('id'))
+            entries.append(process_price_data)
+
+        db.add_all(entries)
+        db.commit()
+        #db.refresh()
+
 
     return {"user": user_data, "employee": employee_data}
 

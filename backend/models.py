@@ -89,6 +89,7 @@ class EmploymentType(Base):
 class Employee(Base):
     __tablename__ = 'employees'
 
+    
     branch_id = Column(Integer, ForeignKey('branches.id'))
     department_id = Column(Integer, ForeignKey('departments.id'))
     employment_type_id = Column(Integer, ForeignKey('employment_types.id'))

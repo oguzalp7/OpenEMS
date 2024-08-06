@@ -1,5 +1,6 @@
 # routers/process_price.py
 
+from collections import defaultdict
 import pandas as pd
 from fastapi.responses import FileResponse
 from fastapi import APIRouter, Depends, HTTPException, Path, Query, File, UploadFile
@@ -74,12 +75,12 @@ def get_raw_process_prices(db: db_dependency, user: user_dependency, skip: int =
     
     return get_items_raw(db=db, table=ProcessPrice, skip=skip, limit=limit)
 
-@router.get('/{price_id}', status_code=status.HTTP_200_OK, response_model=ProcessPriceSchema)
-async def get_raw_process_price(user: user_dependency, db: db_dependency, price_id: int):
-    check_privileges(user, 1)
-    return get_item_raw(db=db, table=ProcessPrice, index=price_id)
+# @router.get('/{price_id}', status_code=status.HTTP_200_OK, response_model=ProcessPriceSchema)
+# async def get_raw_process_price(user: user_dependency, db: db_dependency, price_id: int):
+#     check_privileges(user, 1)
+#     return get_item_raw(db=db, table=ProcessPrice, index=price_id)
 
-@router.get('/', status_code=status.HTTP_200_OK)
+@router.get('/processed', status_code=status.HTTP_200_OK)
 def get_processed_process_prices(user: user_dependency, db: db_dependency, e: Optional[int] = Query(None), pid: Optional[int] = Query(None), skip: int = 0, limit: int = 10):
     """
         params: 
@@ -150,6 +151,74 @@ def update_process_price(price_id: int, price: ProcessPriceSchema, db: db_depend
     db.commit()
     db.refresh(db_price)
     return db_price
+
+
+@router.get('/{employee_id}', status_code=status.HTTP_200_OK)
+async def get_processes_prices_by_employee(db: db_dependency, user: user_dependency, employee_id: int):
+    check_privileges(user, 1)
+    process_prices_query = db.query(
+        #ProcessPrice.id,
+        #Branch.name.label("branch_name"),
+        #Department.name.label("department_name"),
+        Employee.id.label("employee_id"),
+        Employee.name.label("employee_name"),
+        Process.id.label('process_id'),
+        Process.name.label("process_name"),
+        ProcessPrice.id.label('price_id'), 
+        ProcessPrice.price.label("price")
+        )\
+        .join(Employee, ProcessPrice.employee_id == Employee.id)\
+        .join(Process, ProcessPrice.process_id == Process.id)\
+        .join(Department, Process.department_id == Department.id)\
+        .join(Branch, Employee.branch_id == Branch.id)\
+        .filter(Process.id != 16).filter(Employee.id == employee_id).filter(Employee.employment_status == True).all()
+    print(process_prices_query)
+    # return process_prices_query
+
+@router.get('/', status_code=status.HTTP_200_OK)
+async def get_processes_prices(db: db_dependency, user: user_dependency, b: Optional[int] = Query(None), dep: Optional[int] = Query(None)):
+    """
+        params: 
+        b => branch id: int
+        dep => department id: int
+    """
+    check_privileges(user, 1)
+
+    # Query all process_price data
+    process_prices_query = db.query(
+        #ProcessPrice.id,
+        #Branch.name.label("branch_name"),
+        #Department.name.label("department_name"),
+        Employee.id.label("employee_id"),
+        Employee.name.label("employee_name"),
+        Process.name.label("process_name"), 
+        ProcessPrice.price.label("price")
+        )\
+        .join(Employee, ProcessPrice.employee_id == Employee.id)\
+        .join(Process, ProcessPrice.process_id == Process.id)\
+        .join(Department, Process.department_id == Department.id)\
+        .join(Branch, Employee.branch_id == Branch.id)\
+        .filter(Process.id != 16).filter(Employee.employment_status == True)
+    
+    if b is not None:
+        process_prices_query = process_prices_query.filter(Branch.id == b)
+
+    if dep is not None:
+        process_prices_query = process_prices_query.filter(Department.id == dep)
+    
+    process_prices = process_prices_query.all()
+    
+     # Convert the list of tuples to the desired format
+    result = defaultdict(lambda: {"id": None, "name": None, "data": []})
+    for employee_id, employee_name, process_name, price in process_prices:
+        if result[employee_id]["id"] is None:
+            result[employee_id]["id"] = employee_id
+            result[employee_id]["name"] = employee_name
+        result[employee_id]["data"].append({process_name: price})
+
+    return list(result.values())
+    
+
 
 @router.get("/export_process_prices/")
 async def export_process_prices(db: db_dependency, user: user_dependency, b: Optional[int] = Query(None), dep: Optional[int] = Query(None)):

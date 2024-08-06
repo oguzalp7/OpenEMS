@@ -200,7 +200,7 @@ const Events = () => {
   // configure fetch options
   useEffect(() => {
 
-    let newUrl = '/event/?skip=0&limit=10&';
+    let newUrl = '/event/?skip=0&limit=50&';
     const params = [];
     
     if (selectedDepartment) {
