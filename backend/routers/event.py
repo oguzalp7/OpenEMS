@@ -1,6 +1,6 @@
 # routers/event.py
 
-from fastapi import APIRouter, Depends, HTTPException, Path, Query
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, Request
 from sqlalchemy.orm import Session, aliased
 from typing import Annotated, List, Optional, Dict, Any
 from sqlalchemy import func
@@ -13,9 +13,11 @@ from .router_utils import check_privileges, process_details, name_mapping, conve
 import logging
 import json
 
-from models import Event, Process, Department, Employee, Branch
+from models import Customer, Event, Process, Department, Employee, Branch
 
-from schemas.event import EventSchema, EventCreateSchema
+from schemas.event import EventReadSchema, EventSchema, EventCreateSchema
+
+from collections import namedtuple
 
 router = APIRouter(prefix='/event', tags=['Events'])
 
@@ -78,36 +80,30 @@ async def get_schema_details(db: db_dependency, dep: int):
     return dynamic_schema
 
 @router.post("/rp/", status_code=status.HTTP_201_CREATED) #, response_model=EventCreateSchema)
-async def get_remaining_payment(user: user_dependency, db: db_dependency, schema: EventCreateSchema):
+async def get_remaining_payment(user: user_dependency, db: db_dependency, request: Request):
     
-    check_privileges(user, 5)
+    check_privileges(user, 3)
     # check process_id
-    process_query = db.query(Process.attributes).filter(Process.id == schema.process_id).first()
-    if process_query is None:
-        raise HTTPException(status_code=404, detail='İçerik bulunamadı.')
+   # Extract the JSON data as a dictionary
+    form_data = await request.json()
+    data_dict = dict(form_data)
     
-    attributes = process_query[0]
-    
-    DynamicSchema = create_dynamic_model("AttributeSchema", attributes=attributes)
-    
-    
-    details = schema.details
-    # print(details)
-    # validate details
+    # Convert the dictionary to an object with attribute access
+    DataObject = namedtuple('DataObject', data_dict.keys())
+    data_obj = DataObject(**data_dict)
+    #print(data_obj.process_id)
     try:
-        # Validate and create an instance of the dynamic model
-        model_instance = DynamicSchema(**details)
-    except ValidationError as e:
-        print(e)
-        raise HTTPException(status_code=400, detail='İşlem onaylanmadı. Validasyon Hatası.')
+        details = process_details(db=db, process_id=data_obj.process_id, details=data_obj.details, schema=data_obj)
+    except Exception as err:
+        print(err)
+        details = {}
     
-    
-    #print(model_instance.model_dump())
-    details = process_details(db=db, process_id=schema.process_id, details=details, schema=schema)
-    
-    return details
+    if 'remaining_payment' in details.keys():
+        return details['remaining_payment']
+    else:
+        return 0
 
-@router.post("/", status_code=status.HTTP_201_CREATED) #, response_model=EventCreateSchema)
+@router.post("/", status_code=status.HTTP_201_CREATED, response_model=EventReadSchema)
 async def create_event(user: user_dependency, db: db_dependency, schema: EventCreateSchema):
     """
     examples: {
@@ -163,7 +159,7 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     
     """
 
-    check_privileges(user, 5)
+    check_privileges(user, 3)
     # check process_id
     process_query = db.query(Process.attributes).filter(Process.id == schema.process_id).first()
     if process_query is None:
@@ -175,7 +171,7 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     
     
     details = schema.details
-    # print(details)
+    #print(details)
     # validate details
     try:
         # Validate and create an instance of the dynamic model
@@ -188,7 +184,7 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     
     #print(model_instance.model_dump())
     details = process_details(db=db, process_id=schema.process_id, details=details, schema=schema)
-    # print(details)
+    
     
     schema.details = details
 
@@ -200,6 +196,31 @@ async def create_event(user: user_dependency, db: db_dependency, schema: EventCr
     db.add(data)
     db.commit()
     db.refresh(data)
+    
+    
+    # Safely handle the addition to the customer's events
+    if data.id and details['customer_id']:
+        customer_query = db.query(Customer).filter(Customer.id == details['customer_id']).first()
+        
+        if customer_query:
+            if(type(customer_query.events['past_events']) != list):
+                existing_past_events = eval(customer_query.events['past_events'])
+            else:
+                existing_past_events = customer_query.events['past_events']
+            existing_past_events.append(data.id)
+            #print(existing_past_events)
+            
+            customer_query.events = {'past_events': str(existing_past_events)}
+            
+            db.commit()
+            db.refresh(customer_query)
+
+        else:
+            print('not found')
+            # Optionally, handle the case where the customer is not found
+            #db.query(Event).filter(Event.id == data.id).delete()
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Customer not found.')
+    print('Event created.')
     return data
 
 
@@ -301,7 +322,7 @@ async def get_raw_event(user: user_dependency, db: db_dependency, event_id: int)
 
 @router.put("/{event_id}", response_model=EventCreateSchema, status_code=status.HTTP_201_CREATED)
 def update_event(event_id: int, schema: EventCreateSchema, db: db_dependency, user: user_dependency):
-    check_privileges(user, 5)
+    check_privileges(user, 3)
     item = db.query(Event).filter(Event.id == event_id).first() #get_item_raw(db=db, table=Event, index=event_id)
     if item is None: 
         raise HTTPException(status_code=404, detail='Etkinlik bulunamadı.')

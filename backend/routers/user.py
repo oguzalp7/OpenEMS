@@ -126,10 +126,12 @@ def delete_user(db: db_dependency, user: user_dependency, user_id: int = Path(gt
 
 
     
-@router.put('/password', status_code=status.HTTP_201_CREATED)
+@router.put('/password/', status_code=status.HTTP_201_CREATED)
 async def change_password(user: user_dependency, db: db_dependency, schema: PasswordChangeSchema):
+    print(schema.model_dump())
     if user is None:
         raise HTTPException(status_code=401, detail='Authentication Failed')
+    
     
     result = db.query(User).filter(User.id == user.get('id')).first()
 

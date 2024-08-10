@@ -72,7 +72,7 @@ dep: Optional[int] = Query(None), et: Optional[int] = Query(None), active: Optio
             'ID', 'AD-SOYAD', 'ÜLKE KODU', 'TELEFON', 'İŞ TANIMI',
             'İŞ BAŞLANGIÇ TARİHİ', 'İŞ ÇIKIŞ TARİHİ', 'MAAŞ',
             'BAKİYE', 'ÇALIŞMA DURUMU', 'ŞUBE', 'DEPARTMAN', 'ÇALIŞMA TİPİ'
-        ]
+    ]
     
     query = db.query(
             Employee.id,
@@ -214,3 +214,9 @@ def delete_employee(db: db_dependency, user: user_dependency, employee_id: int =
     db.delete(employee)
     db.commit()
     logger.info(f"Employee {employee.id} deleted by user {user.get('id')}")
+
+
+@router.get('/schema/' , status_code=status.HTTP_200_OK)
+async def get_schema(user: user_dependency):
+    check_privileges(user, 1)
+    return EmployeeCreateUpdateSchema.schema()

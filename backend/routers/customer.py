@@ -43,7 +43,7 @@ async def create_customer(user: user_dependency, db: db_dependency, schema: Cust
             }
     }
     """
-    check_privileges(user, 5)
+    check_privileges(user, 3)
 
     data = Customer(**schema.model_dump(), added_by=user.get('id'))
     data.phone_number = data.phone_number.replace(" ", "")
@@ -122,7 +122,7 @@ async def get_schema():
 
 @router.put("/{customer_id}", response_model=CustomerCreateSchema, status_code=status.HTTP_201_CREATED)
 def update_customer(customer_id: int, schema: CustomerCreateSchema, db: db_dependency, user: user_dependency):
-    check_privileges(user, 5)
+    check_privileges(user, 4)
     db_customer = db.query(Customer).filter(Customer.id == customer_id).first()
     if db_customer is None:
         raise HTTPException(status_code=404, detail="Customer not found")

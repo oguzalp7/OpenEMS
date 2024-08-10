@@ -67,7 +67,7 @@ export const logout = async () => {
     redirect("/login");
 }
 
-export const createUserEmployee = async (data) => {
+export const createUserEmployee = async (data: any) => {
     const session = await getSession();
 
     const requestOptions = {
@@ -81,7 +81,7 @@ export const createUserEmployee = async (data) => {
     return response.status
 }
 
-export const createBranch = async (data) => {
+export const createBranch = async (data: any) => {
     const session = await getSession();
 
     const requestOptions = {
@@ -95,7 +95,7 @@ export const createBranch = async (data) => {
     return response.status
 }
 
-export const createDepartment = async (data) => {
+export const createDepartment = async (data: any) => {
     const session = await getSession();
 
     const requestOptions = {
@@ -109,7 +109,7 @@ export const createDepartment = async (data) => {
     return response.status
 }
 
-export const createEmploymentType = async (data) => {
+export const createEmploymentType = async (data: any) => {
     const session = await getSession();
 
     const requestOptions = {
@@ -123,7 +123,7 @@ export const createEmploymentType = async (data) => {
     return response.status
 }
 
-export const createPaymentType = async (data) => {
+export const createPaymentType = async (data: any) => {
     const session = await getSession();
 
     const requestOptions = {
@@ -137,7 +137,7 @@ export const createPaymentType = async (data) => {
     return response.status
 }
 
-export const createCustomer = async (data) => {
+export const createCustomer = async (data: { name: string; phone_number: string; }) => {
     const session = await getSession();
 
     const requestOptions = {
@@ -153,7 +153,7 @@ export const createCustomer = async (data) => {
     return response.status
 }
 
-export const createProcess = async (data) => {
+export const createProcess = async (data: any) => {
     const session = await getSession();
 
     const requestOptions = {

@@ -28,7 +28,7 @@ class DetailController:
             'MANİKÜR': 'process_nailart',
             'PEDİKÜR': 'process_nailart',
             'SAÇ BAKIM': 'process_hair',
-            'GELİN+': '',
+            'GELİN+': 'process_bridesmaid',
         }
 
     def process_makeup_studio_default(self):
@@ -50,16 +50,21 @@ class DetailController:
         # print(self.details)
         # check customer history
         customer_query = self.db.query(Customer).filter(Customer.id == self.details['customer_id']).first()
-
+        past_events = []
         if customer_query is None:
-            raise HTTPException(status_code=404, detail='Müşteri Bulunamadı.')
+            #raise HTTPException(status_code=404, detail='Müşteri Bulunamadı.')
+            past_events = []
 
         # if kina or dis cekim within range in the past
-        #print(customer_query.events['past_events'])
-        if not customer_query.events['past_events']:
+        if customer_query and type(customer_query.events['past_events']) != list:
+            past_events = eval(customer_query.events['past_events'])
+        elif customer_query and type(customer_query.events['past_events']) == list:
+            past_events = customer_query.events['past_events']
+        if len(past_events) == 0:
             process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
         else:
-            for event_id in customer_query.events['past_events']:
+            for event_id in past_events:
+                
                 event_query = self.db.query(Event).filter(Event.id == event_id).first()
                 if event_query is None:
                     raise HTTPException(status_code=400, detail='Bir şeyler ters gitti. Lütfen yetkililerle iletişime geçiniz.(Event)')
@@ -82,23 +87,26 @@ class DetailController:
         self.details['remaining_payment'] = (int(self.details['plus']) * plus_price[0]) + int(process_price_query.price) - int(self.details['downpayment'])
 
         return self.details
-
+    
     def process_studio_exceptionals(self):
         print('studio kina - dis cekim')
 
         # check customer history
         customer_query = self.db.query(Customer).filter(Customer.id == self.details['customer_id']).first()
-
+        past_events = []
         if customer_query is None:
-            raise HTTPException(status_code=404, detail='Müşteri Bulunamadı.')
+            #raise HTTPException(status_code=404, detail='Müşteri Bulunamadı.')
+            past_events = []
 
-        # if kina or dis cekim within range in the past
-        print(customer_query.events['past_events'])
-        if len(customer_query.events['past_events']) == 0:
+        if customer_query and type(customer_query.events['past_events']) != list:
+            past_events = eval(customer_query.events['past_events'])
+        elif customer_query and type(customer_query.events['past_events']) == list:
+            past_events = customer_query.events['past_events']
+        if len(past_events) == 0:
             bride_price_query = self.db.query(Process).filter(Process.name == 'GELİN').first()
             process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == bride_price_query.id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
         else:
-            for event_id in customer_query.events['past_events']:
+            for event_id in past_events:
                 event_query = self.db.query(Event).filter(Event.id == event_id).first()
                 if event_query is None:
                     raise HTTPException(status_code=400, detail='Bir şeyler ters gitti. Lütfen yetkililerle iletişime geçiniz.(Event)')
@@ -128,9 +136,7 @@ class DetailController:
         # query price from the table
         process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
         
-        # for the extra guests, query price from branch as hotel extra guest
-       
-
+        # for the extra guests, query price from branch as hotel extra guests
         plus_price = self.db.query(Branch.hotel_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()
         if plus_price is None:
             raise HTTPException(status_code=404, detail='Fiyat Bulunamadı.')
@@ -146,7 +152,6 @@ class DetailController:
         process_price_query = self.db.query(ProcessPrice).filter(ProcessPrice.process_id == self.schema.process_id).filter(ProcessPrice.employee_id == self.schema.employee_id).first()
 
         # for extra guests calculate the price from branch table, as outside extra guest
-        
         plus_price = self.db.query(Branch.outside_extra_guest_price).filter(Branch.id == self.schema.branch_id).first()
         if plus_price is None:
             raise HTTPException(status_code=404, detail='Fiyat Bulunamadı.')

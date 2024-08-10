@@ -1,6 +1,6 @@
 // pages/events.js
 "use client";
-
+/* eslint no-use-before-define: 0 */  // --> OFF
 import { useState, useEffect } from 'react';
 import ChakraDropdown from '@/components/dropdown.component';
 import { apiClient } from '@/apiClient';

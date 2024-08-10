@@ -1,4 +1,5 @@
 "use client"
+/* eslint no-use-before-define: 0 */  // --> OFF
 import Link from "next/link";
 
 
@@ -14,31 +15,31 @@ const Navbar =  () => {
             <Flex  align='center'>
                 <Flex display={['flex', 'flex', 'flex', 'flex']}>
                     <Link href={'/create-event'}>
-                        <Image src="https://muberyasaglam.com.tr/minimages/ekleme.png"/>
+                        <Image src="https://muberyasaglam.com.tr/minimages/ekleme.png" alt="event"/>
                     </Link>
 
                     <Link href={'/events'}>
-                        <Image src="https://muberyasaglam.com.tr/minimages/saat.png"/>
+                        <Image src="https://muberyasaglam.com.tr/minimages/saat.png" alt="events"/>
                     </Link>
 
                     <Link href={'/settings'}>
-                        <Image src="https://muberyasaglam.com.tr/minimages/ms.png"/>
+                        <Image src="https://muberyasaglam.com.tr/minimages/ms.png" alt="settings"/>
                     </Link>
 
                     <Link href={'/analysis'}>
-                        <Image src="https://muberyasaglam.com.tr/minimages/grafik.png"/>
+                        <Image src="https://muberyasaglam.com.tr/minimages/grafik.png" alt="analysis"/>
                     </Link>
 
                     <Link href={'/customers'}>
-                        <Image src="https://muberyasaglam.com.tr/minimages/mercek.png"/>
+                        <Image src="https://muberyasaglam.com.tr/minimages/mercek.png" alt="customers"/>
                     </Link>
 
                     <Link href={'/settings'}>
-                        <Image src="https://muberyasaglam.com.tr/minimages/ayarlar.png"/>
+                        <Image src="https://muberyasaglam.com.tr/minimages/ayarlar.png" alt="settings"/>
                     </Link>
 
                     <Link href={'/logout'}>
-                        <Image src="https://muberyasaglam.com.tr/minimages/kapat.png"/>
+                        <Image src="https://muberyasaglam.com.tr/minimages/kapat.png" alt="logout"/>
                     </Link>
                 </Flex>
             </Flex>

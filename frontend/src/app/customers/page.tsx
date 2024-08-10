@@ -1,7 +1,7 @@
 // pages/customers.js
 "use client";
-
-import { getSession, deleteCustomer } from '@/actions';
+/* eslint no-use-before-define: 0 */  // --> OFF
+import { getSession } from '@/actions';
 import { apiClient } from '@/apiClient';
 import ChakraDataTable from '@/components/data-table.component';
 import Loading from '@/components/loading.component';
@@ -22,6 +22,11 @@ const Customers = () => {
     fetchSessionInfo();
   }, [])
 
+  interface RowData {
+    SIRA: number;
+    id: number;
+    // Add other properties as needed
+  }
   const [countryCodes, setCountryCodes] = useState([]);
   const [selectedCountryCode, setSelectedCountryCode] = useState('')
 
@@ -31,7 +36,7 @@ const Customers = () => {
   
   const [blacklisted, setBlacklisted] = useState(false);
 
-  const [originalData, setOriginalData] = useState([])
+  const [originalData, setOriginalData] = useState<RowData[]>([]);
   const [data, setData] = useState([]);
   const [url, setURL] = useState('/customer/');
 
@@ -72,21 +77,21 @@ const Customers = () => {
 
   }, [selectedCountryCode, phoneNumber, name, blacklisted]);
 
-  const handleCountryCodeSelect = (selectedValue) => {
+  const handleCountryCodeSelect = (selectedValue: React.SetStateAction<string>) => {
     
     setSelectedCountryCode(selectedValue);
     
   };
 
-  const handleSelectPhoneNumber = (selectedPhoneNumber) => {
+  const handleSelectPhoneNumber = (selectedPhoneNumber: { target: { value: React.SetStateAction<string>; }; }) => {
     setPhoneNumber(selectedPhoneNumber.target.value);
   }
 
-  const handleSelectName = (selectedName) => {
+  const handleSelectName = (selectedName: { target: { value: React.SetStateAction<string>; }; }) => {
     setName(selectedName.target.value);
   }
 
-  const handleSelectBlacklisted = (selectedBlacklisted) => {
+  const handleSelectBlacklisted = (selectedBlacklisted: { target: { checked: boolean | ((prevState: boolean) => boolean); }; }) => {
     setBlacklisted(selectedBlacklisted.target.checked);
   }
 
@@ -145,7 +150,10 @@ const Customers = () => {
     setPhoneNumber("")
     setBlacklisted(false)
   }
-  const handleUpdate = (rowData) => {
+
+
+
+  const handleUpdate = (rowData: RowData) => {
     //console.log(rowData);
     const originalRowData = originalData.find((data) => data.SIRA === rowData.SIRA);
     if (originalRowData) {
@@ -206,7 +214,10 @@ const Customers = () => {
       console.error('Error deleting customer:', error.response ? error.response.data : error.message);
     } */
   };
-
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setModalContent(null);
+  };
 
   // define buttons
   const customButtons = [
@@ -259,12 +270,13 @@ const Customers = () => {
 
       <Checkbox isChecked={blacklisted} onChange={handleSelectBlacklisted}>Kara Liste</Checkbox>
       <Button onClick={openModal}>YENİ</Button>
+      
       <ChakraModal
           isClosed={!isModalOpen}
-          children={<Customer/>}
           contentButtons={[]}
-          actionButtons={[]}
-        />
+          actionButtons={[]}  onClose={handleCloseModal}>
+          <Customer/>
+        </ChakraModal>
       
       <Button background={'transparent'} onClick={resetFilters}>RESET</Button>
       </Stack>

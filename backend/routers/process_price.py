@@ -3,7 +3,7 @@
 from collections import defaultdict
 import pandas as pd
 from fastapi.responses import FileResponse
-from fastapi import APIRouter, Depends, HTTPException, Path, Query, File, UploadFile
+from fastapi import APIRouter, Body, Depends, HTTPException, Path, Query, File, Request, UploadFile
 from sqlalchemy.orm import Session
 from typing import Annotated, List, Optional
 from sqlalchemy import cast, JSON
@@ -156,24 +156,54 @@ def update_process_price(price_id: int, price: ProcessPriceSchema, db: db_depend
 @router.get('/{employee_id}', status_code=status.HTTP_200_OK)
 async def get_processes_prices_by_employee(db: db_dependency, user: user_dependency, employee_id: int):
     check_privileges(user, 1)
-    process_prices_query = db.query(
+    # process_prices_query = db.query(
+    #     #ProcessPrice.id,
+    #     #Branch.name.label("branch_name"),
+    #     #Department.name.label("department_name"),
+    #     Employee.id.label("employee_id"),
+    #     Employee.name.label("employee_name"),
+    #     Process.id.label('process_id'),
+    #     Process.name.label("process_name"),
+    #     ProcessPrice.id.label('price_id'), 
+    #     ProcessPrice.price.label("price")
+    #     )\
+    #     .join(Employee, ProcessPrice.employee_id == Employee.id)\
+    #     .join(Process, ProcessPrice.process_id == Process.id)\
+    #     .join(Department, Process.department_id == Department.id)\
+    #     .join(Branch, Employee.branch_id == Branch.id)\
+    #     .filter(Process.id != 16).filter(Employee.id == employee_id).filter(Employee.employment_status == True).all()
+
+    # Query all process_price data
+    process_price_query = db.query(
         #ProcessPrice.id,
         #Branch.name.label("branch_name"),
         #Department.name.label("department_name"),
         Employee.id.label("employee_id"),
         Employee.name.label("employee_name"),
-        Process.id.label('process_id'),
-        Process.name.label("process_name"),
-        ProcessPrice.id.label('price_id'), 
+        Process.name.label("process_name"), 
         ProcessPrice.price.label("price")
         )\
         .join(Employee, ProcessPrice.employee_id == Employee.id)\
         .join(Process, ProcessPrice.process_id == Process.id)\
         .join(Department, Process.department_id == Department.id)\
         .join(Branch, Employee.branch_id == Branch.id)\
-        .filter(Process.id != 16).filter(Employee.id == employee_id).filter(Employee.employment_status == True).all()
-    print(process_prices_query)
-    # return process_prices_query
+        .filter(Process.id != 16).filter(Employee.employment_status == True).filter(Employee.id == employee_id).all()
+    
+    if process_price_query is None:
+        raise HTTPException(status_code=404, detail='Fiyat bilgisi bulunamadı.')
+    
+    result = defaultdict(lambda: {"id": None, "name": None, "data": []})
+    for employee_id, employee_name, process_name, price in process_price_query:
+        if result[employee_id]["id"] is None:
+            result[employee_id]["id"] = employee_id
+            result[employee_id]["name"] = employee_name
+        result[employee_id]["data"].append({process_name: price})
+
+    if len(list(result.values())) <= 0 :
+        raise HTTPException(status_code=404, detail='Fiyat bilgisi bulunamadı.')
+
+    return list(result.values())[0]
+    
 
 @router.get('/', status_code=status.HTTP_200_OK)
 async def get_processes_prices(db: db_dependency, user: user_dependency, b: Optional[int] = Query(None), dep: Optional[int] = Query(None)):
@@ -217,6 +247,26 @@ async def get_processes_prices(db: db_dependency, user: user_dependency, b: Opti
         result[employee_id]["data"].append({process_name: price})
 
     return list(result.values())
+
+@router.put('/update-prices/{employee_id}', status_code=status.HTTP_201_CREATED)
+async def update_process_prices_per_employee(user: user_dependency, db: db_dependency, employee_id: int, schema: dict =  Body(...)):
+    check_privileges(user, 5)
+    
+    for key, value in schema.items():
+        #print(key, value)
+        query = db.query(ProcessPrice)\
+                .join(Process, Process.id == ProcessPrice.process_id)\
+                .filter(Process.name ==  key).filter(ProcessPrice.employee_id == employee_id).first()
+        if query is None:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Fiyat Bilgisi Bulunamadı.')
+        
+        query.price = value
+
+        db.add(query)
+        db.commit()
+        db.refresh(query)
+    
+    
     
 
 

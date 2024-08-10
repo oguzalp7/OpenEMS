@@ -90,3 +90,9 @@ async def delete_payment(user: user_dependency, db: db_dependency, payment_id: i
     check_privileges(user, 5)
 
     delete_item(db=db, index=payment_id, table=Payments)
+
+
+@router.get('/schema/', status_code=status.HTTP_200_OK)
+async def get_schema(user: user_dependency):
+    check_privileges(user, 1)
+    return PaymentsSchemaCreate.schema()

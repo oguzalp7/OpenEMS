@@ -701,7 +701,9 @@ const EventForm = () => {
                 <Box>
                     
                     <InputGroup>
-                        <InputLeftAddon w={'100px'}  children={<Input type='text' placeholder='CC' w={'xs'} value={countryCode} onChange={(e) => setCountryCode(e.target.value)}/>}  />
+                        <InputLeftAddon w={'100px'}>
+                        <Input type='text' placeholder='CC' w={'xs'} value={countryCode} onChange={(e) => setCountryCode(e.target.value)}/>
+                    </InputLeftAddon>
                         <Input w={'full'} type='tel' placeholder='5...' value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} />
                     </InputGroup>
                     <br/>

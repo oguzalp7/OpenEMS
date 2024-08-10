@@ -1,5 +1,5 @@
 "use client"
-
+/* eslint no-use-before-define: 0 */  // --> OFF
 import React from 'react'
 import { apiClient } from '@/apiClient';
 import { useEffect, useState } from 'react';

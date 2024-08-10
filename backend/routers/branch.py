@@ -26,7 +26,7 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 logger = logging.getLogger(__name__)
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
-def create_branch(db: db_dependency, user: user_dependency, schema: BranchSchema):
+def create_branch(db: db_dependency, user: user_dependency, schema: BranchCreateSchema):
     check_privileges(user, 5)
     
     branch = Branch(
@@ -41,7 +41,7 @@ def create_branch(db: db_dependency, user: user_dependency, schema: BranchSchema
     db.commit()
     db.refresh(branch)
 
-    for dept_id in schema.department_ids:
+    for dept_id in [1, 2, 3]:
         department = db.query(Department).filter(Department.id == dept_id).first()
         if department:
             branch.departments.append(department)
@@ -49,12 +49,12 @@ def create_branch(db: db_dependency, user: user_dependency, schema: BranchSchema
     logger.info(f"Branch {branch.name} created by user {user.get('id')}")
     return branch
 
-@router.get("/", status_code=status.HTTP_200_OK, response_model=List[BranchReadSchema])
+@router.get("/", status_code=status.HTTP_200_OK, response_model=List[BranchFetchSchema])
 def read_branches(db: db_dependency, user: user_dependency, skip: int = 0, limit: int = 10):
     check_privileges(user, 1)
     return db.query(Branch).offset(skip).limit(limit).all()
 
-@router.get("/{branch_id}", status_code=status.HTTP_200_OK, response_model=BranchReadSchema)
+@router.get("/{branch_id}", status_code=status.HTTP_200_OK, response_model=BranchFetchSchema)
 def read_branch(db: db_dependency, user: user_dependency, branch_id: int = Path(gt=0)):
     check_privileges(user, 1)
     
@@ -63,12 +63,22 @@ def read_branch(db: db_dependency, user: user_dependency, branch_id: int = Path(
         raise HTTPException(status_code=404, detail="Şube Bulunamadı. ")
     return branch
 
+@router.get("/offline/{branch_id}", status_code=status.HTTP_200_OK, response_model=BranchReadSchema)
+def read_branch_offline(db: db_dependency, user: user_dependency, branch_id: int = Path(gt=0)):
+    check_privileges(user, 1)
+    
+    branch = db.query(Branch).filter(Branch.id == branch_id).first()
+    if branch is None:
+        raise HTTPException(status_code=404, detail="Şube Bulunamadı. ")
+    return branch
+
 @router.get('/schema/', response_model=Dict[str, Any])
-async def get_schema():
+async def get_schema(user: user_dependency):
+    check_privileges(user, 1)
     return BranchCreateSchema.schema()
 
-@router.put("/{branch_id}", status_code=status.HTTP_200_OK)
-def update_branch(db: db_dependency, user: user_dependency, schema: BranchSchema, branch_id: int = Path(gt=0)):
+@router.put("/offline/{branch_id}", status_code=status.HTTP_200_OK)
+def update_branch_offine(db: db_dependency, user: user_dependency, schema: BranchSchema, branch_id: int = Path(gt=0)):
     check_privileges(user, 5)
     
     branch = db.query(Branch).filter(Branch.id == branch_id).first()
@@ -87,6 +97,32 @@ def update_branch(db: db_dependency, user: user_dependency, schema: BranchSchema
         department = db.query(Department).filter(Department.id == dept_id).first()
         if department:
             branch.departments.append(department)
+
+    db.commit()
+    db.refresh(branch)
+    logger.info(f"Branch {branch.name} updated by user {user.get('id')}")
+    return branch
+
+@router.put('/{branch_id}', status_code=status.HTTP_200_OK)
+def update_branch(db: db_dependency, user: user_dependency, schema: BranchCreateSchema, branch_id: int = Path(gt=0)):
+    check_privileges(user, 5)
+    print(schema)
+    branch = db.query(Branch).filter(Branch.id == branch_id).first()
+    if branch is None:
+        raise HTTPException(status_code=404, detail="Branch not found")
+    
+    branch.name = schema.name
+    branch.is_franchise = schema.is_franchise
+    branch.studio_extra_guest_price = schema.studio_extra_guest_price
+    branch.hotel_extra_guest_price = schema.hotel_extra_guest_price
+    branch.outside_extra_guest_price = schema.outside_extra_guest_price
+    branch.updated_at = datetime.now()
+
+    # branch.departments = []
+    # for dept_id in schema.department_ids:
+    #     department = db.query(Department).filter(Department.id == dept_id).first()
+    #     if department:
+    #         branch.departments.append(department)
 
     db.commit()
     db.refresh(branch)
