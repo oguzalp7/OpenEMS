@@ -266,7 +266,7 @@ async def update_process_prices_per_employee(user: user_dependency, db: db_depen
         db.commit()
         db.refresh(query)
     
-    
+
     
 
 
@@ -376,8 +376,10 @@ async def export_process_prices(db: db_dependency, user: user_dependency, b: Opt
     # Define the filename
     filename = "process_prices.xlsx"
 
+    
+
     # Save DataFrame to Excel
-    df.to_excel(filename, index=False)
+    df.to_excel(f'{filename}', index=False)
 
     return FileResponse(filename, media_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', filename=filename)
 

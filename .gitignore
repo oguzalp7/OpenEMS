@@ -12,3 +12,5 @@ backend/schemas/__pycache__
 
 backend/fastepienv/
 frontend_depreciated
+backend/backup_db_checkpoints/
+backend/assets

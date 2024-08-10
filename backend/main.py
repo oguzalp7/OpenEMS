@@ -5,7 +5,7 @@ from database import engine
 from fastapi.middleware.cors import CORSMiddleware
 
 from routers import auth, user, department, branch, employment_type, employee, process, process_price, user_employee
-from routers import event, customer, payment_type, payments
+from routers import event, customer, payment_type, payments, analysis
 #from routers import payment_type, makeup_process_price, user_employee, nailart_process_price
 
 models.DeclerativeBase.metadata.create_all(bind=engine)
@@ -36,7 +36,7 @@ app.include_router(customer.router)
 app.include_router(user_employee.router)
 app.include_router(event.router)
 app.include_router(payments.router)
-
+app.include_router(analysis.router)
 
 # Instructions
 # - activate virtual environment: "..\..\appointment-v2\backend\fastapienv\Scripts\activate"

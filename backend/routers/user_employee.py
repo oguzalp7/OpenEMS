@@ -114,16 +114,21 @@ async def get_user_employees(db: db_dependency, user: user_dependency, b: Option
     check_privileges(user, 1)
 
     cols = [
-            'ID', 'AD-SOYAD', 'ÜLKE KODU', 'TELEFON', 'KULLANICI ADI', 'YETKİ SEVİYESİ',
+            'ID', 'AD-SOYAD',
+            #'ÜLKE KODU',
+            'TELEFON', 
+            'KULLANICI ADI', 'YETKİ SEVİYESİ',
             'AKTİFLİK', 'İŞ TANIMI',
-            'İŞ BAŞLANGIÇ TARİHİ', 'İŞ ÇIKIŞ TARİHİ', 'MAAŞ',
-            'BAKİYE', 'ÇALIŞMA DURUMU', 'ŞUBE', 'DEPARTMAN', 'ÇALIŞMA TİPİ'
+            'İŞ BAŞLANGIÇ TARİHİ', 'İŞ ÇIKIŞ TARİHİ',
+            #'MAAŞ',
+            #'BAKİYE', 
+            'ÇALIŞMA DURUMU', 'ŞUBE', 'DEPARTMAN', 'ÇALIŞMA TİPİ'
     ]
 
     query = db.query(
             Employee.id,
             Employee.name,
-            Employee.country_code,
+            #Employee.country_code,
             Employee.phone_number,
             User.username,
             User.auth_id,
@@ -131,8 +136,8 @@ async def get_user_employees(db: db_dependency, user: user_dependency, b: Option
             Employee.job_title,
             Employee.employment_start_date,
             Employee.employment_end_date,
-            Employee.salary,
-            Employee.balance,
+            #Employee.salary,
+            #Employee.balance,
             Employee.employment_status,
             Branch.name.label('ŞUBE'),
             Department.name.label('DEPARTMAN'),
