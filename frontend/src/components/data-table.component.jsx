@@ -16,35 +16,10 @@ import {
     Button,
     Box,
     background,
-  } from '@chakra-ui/react'
+} from '@chakra-ui/react'
 
-  import { Checkbox} from '@chakra-ui/react'
-  import {EditIcon, DeleteIcon} from '@chakra-ui/icons'
-
-  /*
-  const customButtons = [
-        {
-            label: 'Güncelle',
-            color: 'gray',
-            onClick: handleUpdate,
-            isDisabled: disableUpdateButton
-        },
-        {
-            label: 'Sil',
-            color: 'red',
-            onClick: handleDelete,
-            isDisabled: disableDeleteButton
-        },
-        {
-            label: 'Yenile',
-            color: 'green',
-            onClick: refreshPage
-        }
-    ];
-  
-  */
-  
-  
+import { Checkbox} from '@chakra-ui/react'
+import {EditIcon, DeleteIcon} from '@chakra-ui/icons'
 
 const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
     /*
@@ -70,7 +45,7 @@ const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
 
   return (
     <TableContainer 
-        w={['md', 'lg', 'xl', 'full']}
+        w={['sm', 'lg', 'xl', 'full']}
         //w={['sm']} //daraltma
         maxWidth={'100%'}
         h={['sm', 'md',  'auto']}
@@ -167,7 +142,7 @@ const ChakraDataTable = ({title,  obj, showButtons, customButtons = []}) => {
     </Table>
     </TableContainer>
     );
-  
+
 }
 
-export default ChakraDataTable
+export default ChakraDataTable;
